@@ -207,8 +207,12 @@ export default function App() {
     };
 
     updateActiveGame((g) => {
+      const scheduledSlots = g.lineup
+        .filter((m) => m.slot <= 10 || m.name.trim() !== '')
+        .map((m) => m.slot);
+      const currentIdx = scheduledSlots.indexOf(g.currentBatterSlot);
       const nextBatterSlot = g.autoAdvanceBatter
-        ? (g.currentBatterSlot % 9) + 1
+        ? scheduledSlots[(currentIdx + 1) % Math.max(1, scheduledSlots.length)] ?? 1
         : g.currentBatterSlot;
 
       let nextInning = g.currentInning;
@@ -300,10 +304,21 @@ export default function App() {
     slot: number,
     patch: Partial<PlayerLineupSlot>
   ) => {
-    updateActiveGame((g) => ({
-      ...g,
-      lineup: g.lineup.map((m) => (m.slot === slot ? { ...m, ...patch } : m)),
-    }));
+    updateActiveGame((g) => {
+      const updatedLineup = g.lineup.map((m) =>
+        m.slot === slot ? { ...m, ...patch } : m
+      );
+      const clearedActiveExtra =
+        slot >= 11 &&
+        patch.name !== undefined &&
+        patch.name.trim() === '' &&
+        g.currentBatterSlot === slot;
+      return {
+        ...g,
+        currentBatterSlot: clearedActiveExtra ? 1 : g.currentBatterSlot,
+        lineup: updatedLineup,
+      };
+    });
   };
 
   const handleCreateNewGame = () => {
@@ -358,6 +373,15 @@ export default function App() {
               mobileTab === 'record' ? 'block' : 'hidden lg:block'
             }`}
           >
+            <InningSelectorBlock
+              currentInning={activeGame.currentInning}
+              inningHalf={activeGame.inningHalf}
+              maxInnings={activeGame.maxInnings}
+              onSelectInning={handleSelectInning}
+              onSelectHalf={handleSelectHalf}
+              onAddExtraInning={handleAddExtraInning}
+            />
+
             <LiveFieldBanner
               currentInning={activeGame.currentInning}
               inningHalf={activeGame.inningHalf}
@@ -368,15 +392,6 @@ export default function App() {
               onSetOuts={handleSetOuts}
               onToggleBase={handleToggleBase}
               onClearField={handleClearField}
-            />
-
-            <InningSelectorBlock
-              currentInning={activeGame.currentInning}
-              inningHalf={activeGame.inningHalf}
-              maxInnings={activeGame.maxInnings}
-              onSelectInning={handleSelectInning}
-              onSelectHalf={handleSelectHalf}
-              onAddExtraInning={handleAddExtraInning}
             />
 
             <BatterSlotBlock

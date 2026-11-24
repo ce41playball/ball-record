@@ -36,7 +36,7 @@ export interface BasesState {
 }
 
 export interface PlayerLineupSlot {
-  slot: number; // 1 to 9
+  slot: number; // 1 to 15
   number: string; // jersey number, e.g. "07"
   name: string;
 }
@@ -45,7 +45,7 @@ export interface PlateAppearance {
   id: string;
   inning: number; // 1 to 12
   inningHalf: InningHalf;
-  batterSlot: number; // 1 to 9
+  batterSlot: number; // 1 to 15
   batterName: string;
   batterNumber: string;
   outcome: OutcomeCode;

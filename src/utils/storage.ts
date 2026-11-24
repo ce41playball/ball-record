@@ -7,8 +7,22 @@ export interface StoredAppState {
   games: GameRecord[];
 }
 
+export const MAX_LINEUP_SLOTS = 15;
+
+const LEGACY_EXTRA_DEFAULT_NAMES: Record<number, string> = {
+  11: '第十一棒選手',
+  12: '第十二棒選手',
+  13: '第十三棒選手',
+  14: '第十四棒選手',
+  15: '第十五棒選手',
+};
+
 export function createDefaultLineup(): PlayerLineupSlot[] {
-  const defaultNumbers = ['01', '06', '24', '55', '18', '09', '12', '27', '04'];
+  const defaultNumbers = [
+    '01', '06', '24', '55', '18',
+    '09', '12', '27', '04', '10',
+    '', '', '', '', '',
+  ];
   const defaultNames = [
     '第一棒選手',
     '第二棒選手',
@@ -19,13 +33,43 @@ export function createDefaultLineup(): PlayerLineupSlot[] {
     '第七棒選手',
     '第八棒選手',
     '第九棒選手',
+    '第十棒選手',
+    '',
+    '',
+    '',
+    '',
+    '',
   ];
 
-  return Array.from({ length: 9 }, (_, i) => ({
+  return Array.from({ length: MAX_LINEUP_SLOTS }, (_, i) => ({
     slot: i + 1,
     number: defaultNumbers[i],
     name: defaultNames[i],
   }));
+}
+
+function normalizeLineup(
+  existing?: PlayerLineupSlot[],
+  plateAppearances: GameRecord['plateAppearances'] = []
+): PlayerLineupSlot[] {
+  const defaults = createDefaultLineup();
+  if (!Array.isArray(existing) || existing.length === 0) {
+    return defaults;
+  }
+  const bySlot = new Map(existing.map((m) => [m.slot, m]));
+  return defaults.map((def) => {
+    const saved = bySlot.get(def.slot);
+    if (!saved) return def;
+    const hasPa = plateAppearances.some((pa) => pa.batterSlot === def.slot);
+    if (
+      def.slot >= 11 &&
+      !hasPa &&
+      saved.name === LEGACY_EXTRA_DEFAULT_NAMES[def.slot]
+    ) {
+      return { ...saved, name: '', number: '' };
+    }
+    return saved;
+  });
 }
 
 export function createNewGame(overrides?: Partial<GameRecord>): GameRecord {
@@ -61,10 +105,18 @@ export function loadStoredState(): StoredAppState {
     if (raw) {
       const parsed = JSON.parse(raw) as StoredAppState;
       if (parsed && Array.isArray(parsed.games) && parsed.games.length > 0) {
-        const activeExists = parsed.games.some((g) => g.id === parsed.activeGameId);
+        const normalizedGames = parsed.games.map((g) => ({
+          ...g,
+          lineup: normalizeLineup(g.lineup, g.plateAppearances),
+        }));
+        const activeExists = normalizedGames.some(
+          (g) => g.id === parsed.activeGameId
+        );
         return {
-          activeGameId: activeExists ? parsed.activeGameId : parsed.games[0].id,
-          games: parsed.games,
+          activeGameId: activeExists
+            ? parsed.activeGameId
+            : normalizedGames[0].id,
+          games: normalizedGames,
         };
       }
     }

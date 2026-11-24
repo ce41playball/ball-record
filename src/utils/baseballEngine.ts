@@ -500,7 +500,10 @@ export function formatGameSummaryText(game: GameRecord): string {
   );
   lines.push('');
   lines.push('--- 打者個人數據 ---');
-  for (const p of players) {
+  const exportPlayers = players.filter(
+    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+  );
+  for (const p of exportPlayers) {
     const outcomeStr =
       p.outcomes.length > 0
         ? p.outcomes.map((o) => OUTCOME_DEFINITIONS[o].shortLabel).join(' / ')
@@ -530,7 +533,10 @@ export function generateCsvExport(game: GameRecord): string {
       .join(',')
   );
 
-  for (const p of players) {
+  const exportPlayers = players.filter(
+    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+  );
+  for (const p of exportPlayers) {
     rows.push(
       [
         `${p.slot}棒`,

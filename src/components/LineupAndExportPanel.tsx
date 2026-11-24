@@ -160,14 +160,14 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
         </div>
       </section>
 
-      {/* 1~9 Lineup Roster Editor */}
+      {/* 1~15 Lineup Roster Editor */}
       <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
         <div>
           <h2 className="text-base font-bold text-slate-900">
-            先發打序名單（1～9棒）
+            先發打序名單（1～{activeGame.lineup.length}棒）
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            修改後會即時同步至打擊選擇區與統計表
+            第 11～15 棒姓名空白代表未安排出場，填寫姓名後將顯示於記分輸入頁面
           </p>
         </div>
 
@@ -194,7 +194,11 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
               />
               <input
                 type="text"
-                placeholder={`第 ${member.slot} 棒球員姓名`}
+                placeholder={
+                  member.slot >= 11
+                    ? `第 ${member.slot} 棒姓名（空白代表未出場）`
+                    : `第 ${member.slot} 棒球員姓名`
+                }
                 value={member.name}
                 onChange={(e) =>
                   onUpdateLineupMember(member.slot, { name: e.target.value })

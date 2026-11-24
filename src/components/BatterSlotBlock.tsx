@@ -54,9 +54,11 @@ export const BatterSlotBlock: React.FC<BatterSlotBlockProps> = ({
         </button>
       </div>
 
-      {/* 1~9 Batting Order Grid */}
+      {/* 1~15 Batting Order Grid (11~15 shown when name is filled) */}
       <div className="grid grid-cols-3 gap-2">
-        {players.map((player) => {
+        {players
+          .filter((player) => player.slot <= 10 || player.name.trim() !== '')
+          .map((player) => {
           const isSelected = player.slot === currentBatterSlot;
           return (
             <div

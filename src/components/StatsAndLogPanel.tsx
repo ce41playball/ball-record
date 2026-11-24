@@ -27,7 +27,10 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
     game.maxInnings
   );
 
-  const reversedLogs = [...game.plateAppearances].reverse();
+  const scheduledPlayers = players.filter(
+    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+  );
+  const chronologicalLogs = game.plateAppearances;
 
   return (
     <div className="space-y-4">
@@ -119,14 +122,14 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
         </div>
       </section>
 
-      {/* 1~9 Batting Box Score */}
+      {/* 1~15 Batting Box Score */}
       <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-base font-bold text-slate-900">
-            個人打擊統計（1～9棒）
+            個人打擊統計（1～{scheduledPlayers.length}棒）
           </h2>
           <span className="text-xs text-slate-500 font-mono-tabular">
-            團隊打點 {totals.rbi} · 保送 {totals.bb} · 三振 {totals.so}
+            團隊打點 {totals.rbi} · 保送 {totals.bb} · 全壘打 {totals.hr}
           </span>
         </div>
 
@@ -144,13 +147,13 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                   安打
                 </th>
                 <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                  全壘打
+                </th>
+                <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
                   打點
                 </th>
                 <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
                   保送
-                </th>
-                <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
-                  三振
                 </th>
                 <th className="py-2 pl-2 text-right font-semibold whitespace-nowrap">
                   打擊率
@@ -158,7 +161,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
               </tr>
             </thead>
             <tbody>
-              {players.map((p) => (
+              {scheduledPlayers.map((p) => (
                 <tr
                   key={p.slot}
                   className={`border-b border-slate-100 last:border-b-0 ${
@@ -194,13 +197,13 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                     {p.h}
                   </td>
                   <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                    {p.hr}
+                  </td>
+                  <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
                     {p.rbi}
                   </td>
                   <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
                     {p.bb}
-                  </td>
-                  <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
-                    {p.so}
                   </td>
                   <td className="py-2.5 pl-2 text-right font-mono-tabular font-bold text-slate-900">
                     {formatAvg(p.avg)}
@@ -221,13 +224,13 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
           </span>
         </div>
 
-        {reversedLogs.length === 0 ? (
+        {chronologicalLogs.length === 0 ? (
           <div className="py-8 text-center text-sm text-slate-500">
             尚未有任何打席紀錄，請從「記分輸入」點選局數、棒次與打席結果。
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {reversedLogs.map((pa, idx) => {
+            {chronologicalLogs.map((pa, idx) => {
               const def = OUTCOME_DEFINITIONS[pa.outcome];
               const categoryColor =
                 def.category === 'hit'
@@ -236,22 +239,34 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                   ? 'text-amber-700'
                   : 'text-rose-700';
 
+              const occupiedBases = [
+                pa.basesAfter.first ? '一壘' : null,
+                pa.basesAfter.second ? '二壘' : null,
+                pa.basesAfter.third ? '三壘' : null,
+              ].filter(Boolean);
+              const basesLabel =
+                occupiedBases.length === 3
+                  ? '滿壘'
+                  : occupiedBases.length > 0
+                  ? occupiedBases.join('、')
+                  : '壘上無人';
+
               return (
                 <li
                   key={pa.id}
                   className="py-3 flex items-center justify-between gap-3"
                 >
-                  <div className="min-w-0 space-y-0.5">
+                  <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                       <span className="font-mono-tabular">
-                        #{game.plateAppearances.length - idx}
+                        #{idx + 1}
                       </span>
                       <span aria-hidden="true">·</span>
                       <span className="font-semibold text-slate-700">
                         {getInningHalfLabel(pa.inning, pa.inningHalf)}
                       </span>
                       <span aria-hidden="true">·</span>
-                      <span>
+                      <span className="truncate">
                         {pa.batterSlot}棒 {pa.batterName}
                       </span>
                     </div>
@@ -276,12 +291,49 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                         </span>
                       )}
                     </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                      <svg
+                        viewBox="0 0 24 22"
+                        className="w-4 h-3.5 shrink-0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="12,1 16,5 12,9 8,5"
+                          className={
+                            pa.basesAfter.second
+                              ? 'fill-amber-500 stroke-amber-700'
+                              : 'fill-white stroke-slate-400'
+                          }
+                          strokeWidth="1.5"
+                        />
+                        <polygon
+                          points="5,8 9,12 5,16 1,12"
+                          className={
+                            pa.basesAfter.third
+                              ? 'fill-amber-500 stroke-amber-700'
+                              : 'fill-white stroke-slate-400'
+                          }
+                          strokeWidth="1.5"
+                        />
+                        <polygon
+                          points="19,8 23,12 19,16 15,12"
+                          className={
+                            pa.basesAfter.first
+                              ? 'fill-amber-500 stroke-amber-700'
+                              : 'fill-white stroke-slate-400'
+                          }
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                      <span>打席後：{basesLabel}</span>
+                    </div>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => onDeletePlateAppearance(pa.id)}
-                    aria-label={`刪除第 ${game.plateAppearances.length - idx} 筆紀錄`}
+                    aria-label={`刪除第 ${idx + 1} 筆紀錄`}
                     className="min-h-[44px] min-w-[44px] rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
