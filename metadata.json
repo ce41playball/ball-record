@@ -1,0 +1,6 @@
+{
+  "name": "DiamondLog 棒球打擊紀錄",
+  "description": "專為球場邊手機單手操作設計的棒球比賽打擊紀錄應用程式，支援局數、棒次與打席結果快速點選，並整合出局數、壘包狀態、打點統計與本機匯出功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
