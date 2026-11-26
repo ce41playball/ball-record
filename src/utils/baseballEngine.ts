@@ -487,9 +487,12 @@ export function formatGameSummaryText(game: GameRecord): string {
   const { players, totals } = calculatePlayerStats(game.lineup, game.plateAppearances);
   const inningScores = calculateInningRuns(game.plateAppearances, game.maxInnings);
 
+  const attackLabel = game.teamAttackOrder === 'second' ? '後攻' : '先攻';
   const lines: string[] = [];
   lines.push(`【${game.title}】${game.date}`);
-  lines.push(`${game.teamName} ${totals.runs} : ${game.opponentScore} ${game.opponentName}`);
+  lines.push(
+    `${game.teamName}(${attackLabel}) ${totals.runs} : ${game.opponentScore} ${game.opponentName}`
+  );
   lines.push(
     `團隊打擊：${totals.ab}打數 ${totals.h}安打 · ${totals.rbi}打點 · ${totals.bb}保送 · ${totals.so}三振 · 打擊率 ${formatAvg(totals.avg)}`
   );

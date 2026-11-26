@@ -38,7 +38,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
       <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-base font-bold text-slate-900">
-            逐局記分與團隊數據
+            比賽結果
           </h2>
           <div className="font-mono-tabular text-xs text-slate-500">
             <span>{totals.ab} 打數</span>
@@ -80,43 +80,93 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-slate-100">
-                <td className="py-2.5 px-2 text-left font-sans font-semibold text-slate-900 whitespace-nowrap">
-                  {game.teamName}
-                </td>
-                {inningRuns.map((item) => (
-                  <td
-                    key={item.inning}
-                    className={`py-2.5 px-2 ${
-                      item.runs > 0
-                        ? 'font-bold text-emerald-700'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    {item.runs}
-                  </td>
-                ))}
-                <td className="py-2.5 px-2.5 font-bold text-[#1E3A8A] border-l border-slate-200">
-                  {totals.runs}
-                </td>
-                <td className="py-2.5 px-2.5 font-bold text-slate-900">
-                  {totals.h}
-                </td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-2 text-left font-sans font-medium text-slate-600 whitespace-nowrap">
-                  {game.opponentName}
-                </td>
-                {inningRuns.map((item) => (
-                  <td key={item.inning} className="py-2.5 px-2 text-slate-400">
-                    -
-                  </td>
-                ))}
-                <td className="py-2.5 px-2.5 font-bold text-slate-900 border-l border-slate-200">
-                  {game.opponentScore}
-                </td>
-                <td className="py-2.5 px-2.5 text-slate-400">-</td>
-              </tr>
+              {game.teamAttackOrder === 'second' ? (
+                <>
+                  <tr className="border-b border-slate-100">
+                    <td className="py-2.5 px-2 text-left font-sans font-medium text-slate-600 whitespace-nowrap">
+                      {game.opponentName}
+                    </td>
+                    {inningRuns.map((item) => (
+                      <td
+                        key={item.inning}
+                        className="py-2.5 px-2 text-slate-400"
+                      >
+                        -
+                      </td>
+                    ))}
+                    <td className="py-2.5 px-2.5 font-bold text-slate-900 border-l border-slate-200">
+                      {game.opponentScore}
+                    </td>
+                    <td className="py-2.5 px-2.5 text-slate-400">-</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-2 text-left font-sans font-semibold text-slate-900 whitespace-nowrap">
+                      {game.teamName}
+                    </td>
+                    {inningRuns.map((item) => (
+                      <td
+                        key={item.inning}
+                        className={`py-2.5 px-2 ${
+                          item.runs > 0
+                            ? 'font-bold text-emerald-700'
+                            : 'text-slate-600'
+                        }`}
+                      >
+                        {item.runs}
+                      </td>
+                    ))}
+                    <td className="py-2.5 px-2.5 font-bold text-[#1E3A8A] border-l border-slate-200">
+                      {totals.runs}
+                    </td>
+                    <td className="py-2.5 px-2.5 font-bold text-slate-900">
+                      {totals.h}
+                    </td>
+                  </tr>
+                </>
+              ) : (
+                <>
+                  <tr className="border-b border-slate-100">
+                    <td className="py-2.5 px-2 text-left font-sans font-semibold text-slate-900 whitespace-nowrap">
+                      {game.teamName}
+                    </td>
+                    {inningRuns.map((item) => (
+                      <td
+                        key={item.inning}
+                        className={`py-2.5 px-2 ${
+                          item.runs > 0
+                            ? 'font-bold text-emerald-700'
+                            : 'text-slate-600'
+                        }`}
+                      >
+                        {item.runs}
+                      </td>
+                    ))}
+                    <td className="py-2.5 px-2.5 font-bold text-[#1E3A8A] border-l border-slate-200">
+                      {totals.runs}
+                    </td>
+                    <td className="py-2.5 px-2.5 font-bold text-slate-900">
+                      {totals.h}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-2 text-left font-sans font-medium text-slate-600 whitespace-nowrap">
+                      {game.opponentName}
+                    </td>
+                    {inningRuns.map((item) => (
+                      <td
+                        key={item.inning}
+                        className="py-2.5 px-2 text-slate-400"
+                      >
+                        -
+                      </td>
+                    ))}
+                    <td className="py-2.5 px-2.5 font-bold text-slate-900 border-l border-slate-200">
+                      {game.opponentScore}
+                    </td>
+                    <td className="py-2.5 px-2.5 text-slate-400">-</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -126,7 +176,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
       <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-base font-bold text-slate-900">
-            個人打擊統計（1～{scheduledPlayers.length}棒）
+            團隊打擊紀錄
           </h2>
           <span className="text-xs text-slate-500 font-mono-tabular">
             團隊打點 {totals.rbi} · 保送 {totals.bb} · 全壘打 {totals.hr}
@@ -285,11 +335,15 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                           · 得分 +{pa.runsScored}
                         </span>
                       )}
-                      {pa.outsRecorded > 0 && (
-                        <span className="text-xs text-slate-500 font-mono-tabular">
-                          · {pa.outsRecorded} 出局
-                        </span>
-                      )}
+                      <span
+                        className={`text-xs font-mono-tabular ${
+                          pa.outsAfter >= 3
+                            ? 'text-rose-700 font-semibold'
+                            : 'text-slate-500'
+                        }`}
+                      >
+                        · {pa.outsAfter} 出局
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-xs text-slate-600">

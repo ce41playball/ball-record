@@ -59,12 +59,15 @@ export interface PlateAppearance {
   timestamp: number;
 }
 
+export type TeamAttackOrder = 'first' | 'second';
+
 export interface GameRecord {
   id: string;
   title: string;
   date: string;
   teamName: string;
   opponentName: string;
+  teamAttackOrder: TeamAttackOrder;
   maxInnings: number; // default 9, expandable to 12
   currentInning: number;
   inningHalf: InningHalf;

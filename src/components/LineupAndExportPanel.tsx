@@ -117,6 +117,61 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
           </label>
         </div>
 
+        {/* Team Attack Order: 先攻 vs 後攻 */}
+        <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-slate-800">
+              我方攻守順序
+            </div>
+            <div className="text-xs text-slate-500">
+              {activeGame.teamAttackOrder === 'second'
+                ? '目前設定：後攻（下半局進攻）'
+                : '目前設定：先攻（上半局進攻）'}
+            </div>
+          </div>
+
+          <div
+            className="inline-flex items-center p-1 bg-slate-100 rounded-xl shrink-0"
+            role="group"
+            aria-label="我方攻守順序"
+          >
+            <button
+              type="button"
+              onClick={() =>
+                onUpdateGameMeta({
+                  teamAttackOrder: 'first',
+                  inningHalf: 'top',
+                })
+              }
+              aria-pressed={activeGame.teamAttackOrder !== 'second'}
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activeGame.teamAttackOrder !== 'second'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              先攻（上半）
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onUpdateGameMeta({
+                  teamAttackOrder: 'second',
+                  inningHalf: 'bottom',
+                })
+              }
+              aria-pressed={activeGame.teamAttackOrder === 'second'}
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activeGame.teamAttackOrder === 'second'
+                  ? 'bg-[#1E3A8A] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              後攻（下半）
+            </button>
+          </div>
+        </div>
+
         {/* Opponent Score Adjustment */}
         <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
           <div>

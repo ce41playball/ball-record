@@ -222,14 +222,10 @@ export default function App() {
       let nextBases = basesAfterCommit;
 
       if (advanceHalfInning) {
-        if (g.inningHalf === 'top') {
-          nextHalf = 'bottom';
-        } else {
-          nextHalf = 'top';
-          nextInning = g.currentInning + 1;
-          if (nextInning > nextMaxInnings && nextInning <= 12) {
-            nextMaxInnings = nextInning;
-          }
+        nextInning = g.currentInning + 1;
+        nextHalf = g.teamAttackOrder === 'second' ? 'bottom' : 'top';
+        if (nextInning > nextMaxInnings && nextInning <= 12) {
+          nextMaxInnings = nextInning;
         }
         nextOuts = 0;
         nextBases = { first: false, second: false, third: false };
@@ -326,6 +322,8 @@ export default function App() {
       title: `新比賽紀錄 #${appState.games.length + 1}`,
       lineup: activeGame.lineup.map((m) => ({ ...m })),
       teamName: activeGame.teamName,
+      teamAttackOrder: activeGame.teamAttackOrder,
+      inningHalf: activeGame.teamAttackOrder === 'second' ? 'bottom' : 'top',
     });
     setAppState((prev) => ({
       activeGameId: fresh.id,

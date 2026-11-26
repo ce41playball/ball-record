@@ -84,6 +84,7 @@ export function createNewGame(overrides?: Partial<GameRecord>): GameRecord {
     date: overrides?.date || today,
     teamName: overrides?.teamName || '我方球隊',
     opponentName: overrides?.opponentName || '對手球隊',
+    teamAttackOrder: overrides?.teamAttackOrder || 'first',
     maxInnings: 9,
     currentInning: 1,
     inningHalf: 'top',
@@ -108,6 +109,7 @@ export function loadStoredState(): StoredAppState {
       if (parsed && Array.isArray(parsed.games) && parsed.games.length > 0) {
         const normalizedGames = parsed.games.map((g) => ({
           ...g,
+          teamAttackOrder: g.teamAttackOrder ?? 'first',
           lineup: normalizeLineup(g.lineup, g.plateAppearances),
         }));
         const activeExists = normalizedGames.some(
