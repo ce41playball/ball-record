@@ -29,6 +29,45 @@ export interface OutcomeDefinition {
   defaultOuts: number;
 }
 
+export type HitDirectionCode =
+  | 'LF'
+  | 'CF'
+  | 'RF'
+  | 'P'
+  | 'C'
+  | '1B'
+  | '2B'
+  | '3B'
+  | 'SS';
+
+export type HitDirectionZone = 'outfield' | 'infield';
+
+export type HitTypeCode = 'LD' | 'FB' | 'GB';
+
+export interface HitTypeDefinition {
+  code: HitTypeCode;
+  label: string;
+}
+
+export interface HitTypeSummary {
+  totalRecorded: number;
+  byCode: Record<HitTypeCode, number>;
+}
+
+export interface HitDirectionDefinition {
+  code: HitDirectionCode;
+  label: string;
+  shortLabel: string;
+  zone: HitDirectionZone;
+}
+
+export interface HitDirectionSummary {
+  totalRecorded: number;
+  outfieldCount: number;
+  infieldCount: number;
+  byCode: Record<HitDirectionCode, number>;
+}
+
 export interface BasesState {
   first: boolean;
   second: boolean;
@@ -49,6 +88,8 @@ export interface PlateAppearance {
   batterName: string;
   batterNumber: string;
   outcome: OutcomeCode;
+  hitDirection?: HitDirectionCode | null;
+  hitType?: HitTypeCode | null;
   rbi: number;
   runsScored: number;
   outsRecorded: number;

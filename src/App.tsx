@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { BatterSlotBlock } from './components/BatterSlotBlock';
+import { HitDirectionBlock } from './components/HitDirectionBlock';
 import { InningSelectorBlock } from './components/InningSelectorBlock';
 import { LineupAndExportPanel } from './components/LineupAndExportPanel';
 import { LiveFieldBanner } from './components/LiveFieldBanner';
@@ -16,6 +17,8 @@ import { TopScoreHeader } from './components/TopScoreHeader';
 import {
   BasesState,
   GameRecord,
+  HitDirectionCode,
+  HitTypeCode,
   InningHalf,
   OutcomeCode,
   PlateAppearance,
@@ -24,6 +27,8 @@ import {
 import {
   calculatePlayerStats,
   getInningHalfLabel,
+  HIT_DIRECTION_DEFINITIONS,
+  HIT_TYPE_DEFINITIONS,
   OUTCOME_DEFINITIONS,
   predictPlaySimulation,
 } from './utils/baseballEngine';
@@ -43,6 +48,11 @@ export default function App() {
     'stats'
   );
   const [pendingOutcome, setPendingOutcome] = useState<OutcomeCode | null>(
+    null
+  );
+  const [pendingHitDirection, setPendingHitDirection] =
+    useState<HitDirectionCode | null>(null);
+  const [pendingHitType, setPendingHitType] = useState<HitTypeCode | null>(
     null
   );
   const [pendingRbi, setPendingRbi] = useState(0);
@@ -154,6 +164,8 @@ export default function App() {
 
   const resetPendingPlay = () => {
     setPendingOutcome(null);
+    setPendingHitDirection(null);
+    setPendingHitType(null);
     setPendingRbi(0);
     setPendingRuns(0);
     setPendingOutsRecorded(0);
@@ -182,6 +194,14 @@ export default function App() {
   const handleConfirmPlateAppearance = (advanceHalfInning: boolean) => {
     if (!pendingOutcome) return;
     const def = OUTCOME_DEFINITIONS[pendingOutcome];
+    const detailTags = [
+      pendingHitDirection
+        ? HIT_DIRECTION_DEFINITIONS[pendingHitDirection].label
+        : null,
+      pendingHitType ? HIT_TYPE_DEFINITIONS[pendingHitType].label : null,
+    ].filter(Boolean);
+    const detailSuffix =
+      detailTags.length > 0 ? `（${detailTags.join(' · ')}）` : '';
     const outsBefore = activeGame.outs;
     const outsAfter = Math.min(3, outsBefore + pendingOutsRecorded);
     const basesAfterCommit = advanceHalfInning
@@ -196,6 +216,8 @@ export default function App() {
       batterName: selectedBatter.name,
       batterNumber: selectedBatter.number,
       outcome: pendingOutcome,
+      hitDirection: pendingHitDirection,
+      hitType: pendingHitType,
       rbi: pendingRbi,
       runsScored: pendingRuns,
       outsRecorded: pendingOutsRecorded,
@@ -244,6 +266,8 @@ export default function App() {
     });
 
     setPendingOutcome(null);
+    setPendingHitDirection(null);
+    setPendingHitType(null);
     setPendingRbi(0);
     setPendingRuns(0);
     setPendingOutsRecorded(0);
@@ -251,8 +275,8 @@ export default function App() {
     setManualRunsEdited(false);
     setToastMessage(
       advanceHalfInning
-        ? `已紀錄 ${selectedBatter.slot}棒 ${def.label}，並推進至下一半局`
-        : `已紀錄 ${getInningHalfLabel(activeGame.currentInning, activeGame.inningHalf)} · ${selectedBatter.slot}棒 ${def.label}`
+        ? `已紀錄 ${selectedBatter.slot}棒 ${def.label}${detailSuffix}，並推進至下一半局`
+        : `已紀錄 ${getInningHalfLabel(activeGame.currentInning, activeGame.inningHalf)} · ${selectedBatter.slot}棒 ${def.label}${detailSuffix}`
     );
   };
 
@@ -410,11 +434,22 @@ export default function App() {
               onPickOutcome={handlePickOutcome}
             />
 
+            <HitDirectionBlock
+              selectedBatterSlot={selectedBatter.slot}
+              selectedBatterName={selectedBatter.name}
+              selectedDirection={pendingHitDirection}
+              selectedHitType={pendingHitType}
+              onSelectDirection={setPendingHitDirection}
+              onSelectHitType={setPendingHitType}
+            />
+
             <RbiAndRunBlock
               inning={activeGame.currentInning}
               inningHalf={activeGame.inningHalf}
               batter={selectedBatter}
               selectedOutcome={pendingOutcome}
+              selectedHitDirection={pendingHitDirection}
+              selectedHitType={pendingHitType}
               rbi={pendingRbi}
               runsScored={pendingRuns}
               outsRecorded={pendingOutsRecorded}

@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { GameRecord } from '../types/baseball';
+import { GameRecord, HitDirectionCode } from '../types/baseball';
 import {
+  calculateHitDirectionStats,
+  calculateHitTypeStats,
   calculateInningRuns,
   calculatePlayerStats,
   formatAvg,
   getInningHalfLabel,
+  HIT_DIRECTION_DEFINITIONS,
+  HIT_DIRECTION_GROUPS,
+  HIT_TYPE_CODES,
+  HIT_TYPE_DEFINITIONS,
   OUTCOME_DEFINITIONS,
 } from '../utils/baseballEngine';
 
@@ -14,10 +20,28 @@ interface StatsAndLogPanelProps {
   onDeletePlateAppearance: (paId: string) => void;
 }
 
+const FIELD_ZONE_COORDS: Record<
+  HitDirectionCode,
+  { x: number; y: number; short: string }
+> = {
+  LF: { x: 48, y: 54, short: '左外' },
+  CF: { x: 110, y: 34, short: '中外' },
+  RF: { x: 172, y: 54, short: '右外' },
+  SS: { x: 80, y: 92, short: '游擊' },
+  '2B': { x: 140, y: 92, short: '二壘' },
+  '3B': { x: 64, y: 120, short: '三壘' },
+  '1B': { x: 156, y: 120, short: '一壘' },
+  P: { x: 110, y: 124, short: '投手' },
+  C: { x: 110, y: 164, short: '捕手' },
+};
+
 export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
   game,
   onDeletePlateAppearance,
 }) => {
+  const [directionBatterFilter, setDirectionBatterFilter] = useState<
+    number | 'all'
+  >('all');
   const { players, totals } = calculatePlayerStats(
     game.lineup,
     game.plateAppearances
@@ -30,6 +54,22 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
   const scheduledPlayers = players.filter(
     (p) => p.slot <= 9 || p.name.trim() !== '' || p.pa > 0
   );
+  const directionStats = calculateHitDirectionStats(
+    game.plateAppearances,
+    directionBatterFilter
+  );
+  const hitTypeStats = calculateHitTypeStats(
+    game.plateAppearances,
+    directionBatterFilter
+  );
+  const outfieldPct =
+    directionStats.totalRecorded > 0
+      ? Math.round(
+          (directionStats.outfieldCount / directionStats.totalRecorded) * 100
+        )
+      : 0;
+  const infieldPct =
+    directionStats.totalRecorded > 0 ? 100 - outfieldPct : 0;
   const chronologicalLogs = game.plateAppearances;
 
   return (
@@ -265,6 +305,240 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
         </div>
       </section>
 
+      {/* Hit Direction Statistics */}
+      <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              擊球方向與型態統計
+            </h2>
+            <div className="font-mono-tabular text-xs text-slate-500 mt-0.5">
+              <span>共 {directionStats.totalRecorded} 球</span>
+              <span className="mx-1.5" aria-hidden="true">
+                ·
+              </span>
+              <span>
+                外野 {directionStats.outfieldCount} ({outfieldPct}%)
+              </span>
+              <span className="mx-1.5" aria-hidden="true">
+                ·
+              </span>
+              <span>
+                內野 {directionStats.infieldCount} ({infieldPct}%)
+              </span>
+            </div>
+          </div>
+
+          <select
+            aria-label="篩選打者擊球方向統計"
+            value={directionBatterFilter}
+            onChange={(e) => {
+              const val = e.target.value;
+              setDirectionBatterFilter(val === 'all' ? 'all' : Number(val));
+            }}
+            className="min-h-[38px] px-2.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1E3A8A]"
+          >
+            <option value="all">全隊擊球分佈</option>
+            {scheduledPlayers.map((p) => (
+              <option key={p.slot} value={p.slot}>
+                {p.slot}棒 {p.name.trim() || '未命名選手'}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+          {/* Baseball Field Spray Zone Visual */}
+          <div className="sm:col-span-5 flex justify-center">
+            <svg
+              viewBox="0 0 220 184"
+              className="w-full max-w-[220px] h-auto"
+              role="img"
+              aria-label="球場擊球方向分佈圖"
+            >
+              {/* Outfield Grass Sector */}
+              <path
+                d="M 110 162 L 16 74 A 132 132 0 0 1 204 74 Z"
+                fill="#ECFDF5"
+                stroke="#CBD5E1"
+                strokeWidth="1.5"
+              />
+              {/* Infield Dirt Arc */}
+              <path
+                d="M 110 162 L 50 106 A 84 84 0 0 1 170 106 Z"
+                fill="#FEF3C7"
+                fillOpacity="0.65"
+                stroke="#E2E8F0"
+                strokeWidth="1"
+              />
+              {/* Infield Diamond */}
+              <polygon
+                points="110,88 146,124 110,160 74,124"
+                fill="#FFFFFF"
+                fillOpacity="0.8"
+                stroke="#CBD5E1"
+                strokeWidth="1.2"
+              />
+              {/* Foul Lines */}
+              <line
+                x1="110"
+                y1="162"
+                x2="16"
+                y2="74"
+                stroke="#94A3B8"
+                strokeWidth="1.2"
+              />
+              <line
+                x1="110"
+                y1="162"
+                x2="204"
+                y2="74"
+                stroke="#94A3B8"
+                strokeWidth="1.2"
+              />
+
+              {(Object.keys(FIELD_ZONE_COORDS) as HitDirectionCode[]).map(
+                (code) => {
+                  const pos = FIELD_ZONE_COORDS[code];
+                  const count = directionStats.byCode[code];
+                  const hasCount = count > 0;
+                  return (
+                    <g key={code}>
+                      <rect
+                        x={pos.x - 19}
+                        y={pos.y - 13}
+                        width="38"
+                        height="26"
+                        rx="7"
+                        fill={hasCount ? '#1E3A8A' : '#FFFFFF'}
+                        fillOpacity={hasCount ? 1 : 0.92}
+                        stroke={hasCount ? '#1E3A8A' : '#CBD5E1'}
+                        strokeWidth="1.2"
+                      />
+                      <text
+                        x={pos.x}
+                        y={pos.y - 2}
+                        textAnchor="middle"
+                        className="font-sans"
+                        fontSize="8.5"
+                        fontWeight="600"
+                        fill={hasCount ? '#DBEAFE' : '#475569'}
+                      >
+                        {pos.short}
+                      </text>
+                      <text
+                        x={pos.x}
+                        y={pos.y + 9}
+                        textAnchor="middle"
+                        className="font-mono-tabular"
+                        fontSize="10"
+                        fontWeight="700"
+                        fill={hasCount ? '#FFFFFF' : '#94A3B8'}
+                      >
+                        {count}
+                      </text>
+                    </g>
+                  );
+                }
+              )}
+            </svg>
+          </div>
+
+          {/* Zone Breakdown Counts */}
+          <div className="sm:col-span-7 space-y-2.5">
+            {HIT_DIRECTION_GROUPS.map((group) => (
+              <div key={group.id} className="space-y-1.5">
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="font-semibold text-slate-700">
+                    {group.title}
+                  </span>
+                  <span className="font-mono-tabular text-slate-500">
+                    {group.id === 'outfield'
+                      ? `${directionStats.outfieldCount} 球 (${outfieldPct}%)`
+                      : `${directionStats.infieldCount} 球 (${infieldPct}%)`}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {group.codes.map((code) => {
+                    const def = HIT_DIRECTION_DEFINITIONS[code];
+                    const count = directionStats.byCode[code];
+                    const pct =
+                      directionStats.totalRecorded > 0
+                        ? Math.round(
+                            (count / directionStats.totalRecorded) * 100
+                          )
+                        : 0;
+                    return (
+                      <div
+                        key={code}
+                        className={`px-2 py-1.5 rounded-lg border text-xs flex items-center justify-between gap-1 ${
+                          count > 0
+                            ? 'bg-blue-50/60 border-blue-200 text-slate-900'
+                            : 'bg-slate-50/70 border-slate-100 text-slate-500'
+                        }`}
+                      >
+                        <span className="font-medium truncate">
+                          {def.label}
+                        </span>
+                        <span className="font-mono-tabular font-bold shrink-0">
+                          {count}
+                          {count > 0 && (
+                            <span className="text-[10px] font-normal text-slate-500 ml-0.5">
+                              ({pct}%)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <div className="space-y-1.5 pt-1 border-t border-slate-100">
+              <div className="flex items-baseline justify-between text-xs">
+                <span className="font-semibold text-slate-700">擊球型態</span>
+                <span className="font-mono-tabular text-slate-500">
+                  共 {hitTypeStats.totalRecorded} 球
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {HIT_TYPE_CODES.map((code) => {
+                  const def = HIT_TYPE_DEFINITIONS[code];
+                  const count = hitTypeStats.byCode[code];
+                  const pct =
+                    hitTypeStats.totalRecorded > 0
+                      ? Math.round(
+                          (count / hitTypeStats.totalRecorded) * 100
+                        )
+                      : 0;
+                  return (
+                    <div
+                      key={code}
+                      className={`px-2 py-1.5 rounded-lg border text-xs flex items-center justify-between gap-1 ${
+                        count > 0
+                          ? 'bg-sky-50/75 border-sky-200 text-slate-900'
+                          : 'bg-slate-50/70 border-slate-100 text-slate-500'
+                      }`}
+                    >
+                      <span className="font-medium truncate">{def.label}</span>
+                      <span className="font-mono-tabular font-bold shrink-0">
+                        {count}
+                        {count > 0 && (
+                          <span className="text-[10px] font-normal text-slate-500 ml-0.5">
+                            ({pct}%)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Play-by-Play Log */}
       <section className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
         <div className="flex items-baseline justify-between">
@@ -325,6 +599,17 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                       <span className={`font-bold ${categoryColor}`}>
                         {def.label} ({def.code})
                       </span>
+                      {pa.hitDirection &&
+                        HIT_DIRECTION_DEFINITIONS[pa.hitDirection] && (
+                          <span className="text-xs font-semibold text-[#1E3A8A]">
+                            · {HIT_DIRECTION_DEFINITIONS[pa.hitDirection].label}
+                          </span>
+                        )}
+                      {pa.hitType && HIT_TYPE_DEFINITIONS[pa.hitType] && (
+                        <span className="text-xs font-semibold text-sky-700">
+                          · {HIT_TYPE_DEFINITIONS[pa.hitType].label}
+                        </span>
+                      )}
                       {pa.rbi > 0 && (
                         <span className="text-xs font-semibold text-amber-700 font-mono-tabular">
                           · {pa.rbi} 打點

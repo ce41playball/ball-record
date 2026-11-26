@@ -1,6 +1,12 @@
 import {
   BasesState,
   GameRecord,
+  HitDirectionCode,
+  HitDirectionDefinition,
+  HitDirectionSummary,
+  HitTypeCode,
+  HitTypeDefinition,
+  HitTypeSummary,
   InningHalf,
   OutcomeCode,
   OutcomeDefinition,
@@ -198,6 +204,115 @@ export const OUTCOME_GROUPS: {
     codes: ['SO', 'GO', 'FO', 'DP', 'SAC', 'SF'],
   },
 ];
+
+export const HIT_DIRECTION_DEFINITIONS: Record<
+  HitDirectionCode,
+  HitDirectionDefinition
+> = {
+  LF: { code: 'LF', label: '左外野', shortLabel: '左外', zone: 'outfield' },
+  CF: { code: 'CF', label: '中外野', shortLabel: '中外', zone: 'outfield' },
+  RF: { code: 'RF', label: '右外野', shortLabel: '右外', zone: 'outfield' },
+  P: { code: 'P', label: '投手', shortLabel: '投', zone: 'infield' },
+  C: { code: 'C', label: '捕手', shortLabel: '捕', zone: 'infield' },
+  '1B': { code: '1B', label: '一壘', shortLabel: '一壘', zone: 'infield' },
+  '2B': { code: '2B', label: '二壘', shortLabel: '二壘', zone: 'infield' },
+  '3B': { code: '3B', label: '三壘', shortLabel: '三壘', zone: 'infield' },
+  SS: { code: 'SS', label: '游擊', shortLabel: '游擊', zone: 'infield' },
+};
+
+export const HIT_DIRECTION_GROUPS: {
+  id: 'outfield' | 'infield';
+  title: string;
+  codes: HitDirectionCode[];
+}[] = [
+  {
+    id: 'outfield',
+    title: '外野',
+    codes: ['LF', 'CF', 'RF'],
+  },
+  {
+    id: 'infield',
+    title: '內野',
+    codes: ['P', 'C', '1B', '2B', '3B', 'SS'],
+  },
+];
+
+export function calculateHitDirectionStats(
+  plateAppearances: PlateAppearance[],
+  batterSlotFilter: number | 'all' = 'all'
+): HitDirectionSummary {
+  const byCode: Record<HitDirectionCode, number> = {
+    LF: 0,
+    CF: 0,
+    RF: 0,
+    P: 0,
+    C: 0,
+    '1B': 0,
+    '2B': 0,
+    '3B': 0,
+    SS: 0,
+  };
+  let totalRecorded = 0;
+  let outfieldCount = 0;
+  let infieldCount = 0;
+
+  for (const pa of plateAppearances) {
+    if (batterSlotFilter !== 'all' && pa.batterSlot !== batterSlotFilter) {
+      continue;
+    }
+    const dir = pa.hitDirection;
+    if (!dir || !(dir in HIT_DIRECTION_DEFINITIONS)) continue;
+    byCode[dir] += 1;
+    totalRecorded += 1;
+    if (HIT_DIRECTION_DEFINITIONS[dir].zone === 'outfield') {
+      outfieldCount += 1;
+    } else {
+      infieldCount += 1;
+    }
+  }
+
+  return {
+    totalRecorded,
+    outfieldCount,
+    infieldCount,
+    byCode,
+  };
+}
+
+export const HIT_TYPE_DEFINITIONS: Record<HitTypeCode, HitTypeDefinition> = {
+  LD: { code: 'LD', label: '平飛球' },
+  FB: { code: 'FB', label: '高飛球' },
+  GB: { code: 'GB', label: '滾地球' },
+};
+
+export const HIT_TYPE_CODES: HitTypeCode[] = ['LD', 'FB', 'GB'];
+
+export function calculateHitTypeStats(
+  plateAppearances: PlateAppearance[],
+  batterSlotFilter: number | 'all' = 'all'
+): HitTypeSummary {
+  const byCode: Record<HitTypeCode, number> = {
+    LD: 0,
+    FB: 0,
+    GB: 0,
+  };
+  let totalRecorded = 0;
+
+  for (const pa of plateAppearances) {
+    if (batterSlotFilter !== 'all' && pa.batterSlot !== batterSlotFilter) {
+      continue;
+    }
+    const type = pa.hitType;
+    if (!type || !(type in HIT_TYPE_DEFINITIONS)) continue;
+    byCode[type] += 1;
+    totalRecorded += 1;
+  }
+
+  return {
+    totalRecorded,
+    byCode,
+  };
+}
 
 export function countRunners(bases: BasesState): number {
   return (bases.first ? 1 : 0) + (bases.second ? 1 : 0) + (bases.third ? 1 : 0);
@@ -515,11 +630,34 @@ export function formatGameSummaryText(game: GameRecord): string {
       `${p.slot}棒 #${p.number || '-'} ${p.name}：${p.ab}-${p.h} (${p.rbi}打點, AVG ${formatAvg(p.avg)})｜${outcomeStr}`
     );
   }
+  const directionSummary = calculateHitDirectionStats(game.plateAppearances);
+  const hitTypeSummary = calculateHitTypeStats(game.plateAppearances);
+  if (directionSummary.totalRecorded > 0) {
+    const outfieldLine = HIT_DIRECTION_GROUPS[0].codes
+      .map((c) => `${HIT_DIRECTION_DEFINITIONS[c].label} ${directionSummary.byCode[c]}`)
+      .join(' / ');
+    const infieldLine = HIT_DIRECTION_GROUPS[1].codes
+      .map((c) => `${HIT_DIRECTION_DEFINITIONS[c].label} ${directionSummary.byCode[c]}`)
+      .join(' / ');
+    lines.push('');
+    lines.push(`--- 擊球方向統計（共 ${directionSummary.totalRecorded} 球）---`);
+    lines.push(`外野 (${directionSummary.outfieldCount})：${outfieldLine}`);
+    lines.push(`內野 (${directionSummary.infieldCount})：${infieldLine}`);
+  }
+  if (hitTypeSummary.totalRecorded > 0) {
+    const typeLine = HIT_TYPE_CODES.map(
+      (c) => `${HIT_TYPE_DEFINITIONS[c].label} ${hitTypeSummary.byCode[c]}`
+    ).join(' / ');
+    lines.push(`擊球型態（共 ${hitTypeSummary.totalRecorded} 球）：${typeLine}`);
+  }
+
   return lines.join('\n');
 }
 
 export function generateCsvExport(game: GameRecord): string {
   const { players, totals } = calculatePlayerStats(game.lineup, game.plateAppearances);
+  const directionSummary = calculateHitDirectionStats(game.plateAppearances);
+  const hitTypeSummary = calculateHitTypeStats(game.plateAppearances);
   const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
 
   const rows: string[] = [];
@@ -567,10 +705,46 @@ export function generateCsvExport(game: GameRecord): string {
   }
 
   rows.push('');
+  rows.push(['擊球方向統計', `共 ${directionSummary.totalRecorded} 球`].map(escape).join(','));
+  rows.push(['區域', '擊球方向', '代碼', '次數', '佔比'].map(escape).join(','));
+  for (const group of HIT_DIRECTION_GROUPS) {
+    for (const code of group.codes) {
+      const def = HIT_DIRECTION_DEFINITIONS[code];
+      const count = directionSummary.byCode[code];
+      const pct =
+        directionSummary.totalRecorded > 0
+          ? `${Math.round((count / directionSummary.totalRecorded) * 100)}%`
+          : '0%';
+      rows.push(
+        [group.title, def.label, def.code, count, pct].map(escape).join(',')
+      );
+    }
+  }
+
+  rows.push('');
+  rows.push(['擊球型態統計', `共 ${hitTypeSummary.totalRecorded} 球`].map(escape).join(','));
+  rows.push(['擊球型態', '代碼', '次數', '佔比'].map(escape).join(','));
+  for (const code of HIT_TYPE_CODES) {
+    const def = HIT_TYPE_DEFINITIONS[code];
+    const count = hitTypeSummary.byCode[code];
+    const pct =
+      hitTypeSummary.totalRecorded > 0
+        ? `${Math.round((count / hitTypeSummary.totalRecorded) * 100)}%`
+        : '0%';
+    rows.push([def.label, def.code, count, pct].map(escape).join(','));
+  }
+
+  rows.push('');
   rows.push(['逐打席詳細紀錄'].map(escape).join(','));
-  rows.push(['序號', '局數', '半局', '棒次', '背號', '姓名', '打席結果', '打點', '得分', '記錄出局數'].map(escape).join(','));
+  rows.push(['序號', '局數', '半局', '棒次', '背號', '姓名', '打席結果', '擊球方向', '擊球型態', '打點', '得分', '記錄出局數'].map(escape).join(','));
 
   game.plateAppearances.forEach((pa, idx) => {
+    const dirLabel = pa.hitDirection
+      ? HIT_DIRECTION_DEFINITIONS[pa.hitDirection].label
+      : '';
+    const typeLabel = pa.hitType
+      ? HIT_TYPE_DEFINITIONS[pa.hitType].label
+      : '';
     rows.push(
       [
         idx + 1,
@@ -580,6 +754,8 @@ export function generateCsvExport(game: GameRecord): string {
         pa.batterNumber,
         pa.batterName,
         OUTCOME_DEFINITIONS[pa.outcome].label,
+        dirLabel,
+        typeLabel,
         pa.rbi,
         pa.runsScored,
         pa.outsRecorded,

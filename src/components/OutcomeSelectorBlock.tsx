@@ -67,49 +67,59 @@ export const OutcomeSelectorBlock: React.FC<OutcomeSelectorBlockProps> = ({
           第三區塊：選擇打席結果
         </h2>
         <p className="text-xs text-slate-500 mt-0.5">
-          選擇打席結果後，請於第四區塊確認打點與得分數（{selectedBatterSlot}棒{' '}
+          選擇打席結果後，可於第四區塊選擇擊球方向，並於第五區塊確認打點與得分數（{selectedBatterSlot}棒{' '}
           {selectedPlayerText(selectedBatterName)}）
         </p>
       </div>
 
       <div className="space-y-4">
-        {OUTCOME_GROUPS.map((group) => (
-          <div key={group.id} className="space-y-2">
-            <div className="text-xs font-semibold text-slate-600">
-              {group.title}
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {group.codes.map((code) => {
-                const def = OUTCOME_DEFINITIONS[code];
-                const isSelected = selectedOutcome === code;
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => onPickOutcome(code)}
-                    aria-pressed={isSelected}
-                    className={`min-h-[48px] px-3 py-2 rounded-xl border transition-all active:scale-[0.97] flex items-center justify-between gap-1.5 text-left ${getGroupButtonStyle(
-                      group.id,
-                      isSelected
-                    )}`}
-                  >
-                    <span className="text-sm font-bold whitespace-nowrap">
-                      {def.label}
-                    </span>
-                    <span
-                      className={`font-mono-tabular text-xs font-bold shrink-0 ${getCodeBadgeStyle(
+        {OUTCOME_GROUPS.map((group) => {
+          const isReachOrOutGroup =
+            group.id === 'reach' || group.id === 'out';
+          return (
+            <div key={group.id} className="space-y-1.5">
+              <div className="text-xs font-semibold text-slate-600">
+                {group.title}
+              </div>
+              <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                {group.codes.map((code) => {
+                  const def = OUTCOME_DEFINITIONS[code];
+                  const isSelected = selectedOutcome === code;
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => onPickOutcome(code)}
+                      aria-pressed={isSelected}
+                      className={`rounded-xl border transition-all active:scale-[0.97] flex min-h-[44px] px-1 sm:px-2.5 py-1.5 flex-col sm:flex-row items-center justify-center sm:justify-between gap-0.5 sm:gap-1 text-center sm:text-left ${getGroupButtonStyle(
                         group.id,
                         isSelected
                       )}`}
                     >
-                      {def.code}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span
+                        className={`font-bold whitespace-nowrap ${
+                          isReachOrOutGroup
+                            ? 'text-[11px] sm:text-sm'
+                            : 'text-xs sm:text-sm'
+                        }`}
+                      >
+                        {def.label}
+                      </span>
+                      <span
+                        className={`font-mono-tabular font-bold shrink-0 text-[11px] sm:text-xs ${getCodeBadgeStyle(
+                          group.id,
+                          isSelected
+                        )}`}
+                      >
+                        {def.code}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

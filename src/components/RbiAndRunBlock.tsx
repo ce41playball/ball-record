@@ -2,12 +2,16 @@ import React from 'react';
 import { Check, Minus, Plus, RotateCcw } from 'lucide-react';
 import {
   BasesState,
+  HitDirectionCode,
+  HitTypeCode,
   InningHalf,
   OutcomeCode,
   PlayerLineupSlot,
 } from '../types/baseball';
 import {
   getInningHalfLabel,
+  HIT_DIRECTION_DEFINITIONS,
+  HIT_TYPE_DEFINITIONS,
   OUTCOME_DEFINITIONS,
 } from '../utils/baseballEngine';
 
@@ -16,6 +20,8 @@ interface RbiAndRunBlockProps {
   inningHalf: InningHalf;
   batter: PlayerLineupSlot;
   selectedOutcome: OutcomeCode | null;
+  selectedHitDirection: HitDirectionCode | null;
+  selectedHitType: HitTypeCode | null;
   rbi: number;
   runsScored: number;
   outsRecorded: number;
@@ -36,6 +42,8 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
   inningHalf,
   batter,
   selectedOutcome,
+  selectedHitDirection,
+  selectedHitType,
   rbi,
   runsScored,
   outsRecorded,
@@ -49,6 +57,12 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
   onConfirm,
 }) => {
   const def = selectedOutcome ? OUTCOME_DEFINITIONS[selectedOutcome] : null;
+  const dirDef = selectedHitDirection
+    ? HIT_DIRECTION_DEFINITIONS[selectedHitDirection]
+    : null;
+  const typeDef = selectedHitType
+    ? HIT_TYPE_DEFINITIONS[selectedHitType]
+    : null;
   const projectedTotalOuts = Math.min(3, currentOuts + outsRecorded);
   const isThirdOut = selectedOutcome !== null && projectedTotalOuts >= 3;
 
@@ -63,7 +77,7 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
             id="block-rbi-heading"
             className="text-base font-bold text-slate-900"
           >
-            第四區塊：紀錄打點與得分
+            第五區塊：紀錄打點與得分
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             {def ? (
@@ -73,6 +87,18 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
                 <span className="font-semibold text-slate-800">
                   {def.label} ({def.code})
                 </span>
+                {dirDef && (
+                  <span className="font-semibold text-[#1E3A8A]">
+                    {' '}
+                    · {dirDef.label}
+                  </span>
+                )}
+                {typeDef && (
+                  <span className="font-semibold text-[#1E3A8A]">
+                    {' '}
+                    · {typeDef.label}
+                  </span>
+                )}
               </span>
             ) : (
               '點選 0～4 打點並按得分按鈕計數，於第三區塊選擇打席結果後即可送出'
@@ -80,7 +106,11 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
           </p>
         </div>
 
-        {(selectedOutcome !== null || rbi > 0 || runsScored > 0) && (
+        {(selectedOutcome !== null ||
+          selectedHitDirection !== null ||
+          selectedHitType !== null ||
+          rbi > 0 ||
+          runsScored > 0) && (
           <button
             type="button"
             onClick={onResetPending}
@@ -179,7 +209,7 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
       {/* Compact Outs & Post-play Bases Adjustments */}
       <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-600">造成出局</span>
+          <span className="text-xs font-semibold text-slate-600">造成出局數</span>
           <button
             type="button"
             onClick={() => onChangeOutsRecorded(Math.max(0, outsRecorded - 1))}
