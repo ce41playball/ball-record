@@ -7,6 +7,7 @@ import {
   calculateInningRuns,
   calculatePlayerStats,
   formatAvg,
+  formatGroundFlyRatio,
   getInningHalfLabel,
   HIT_DIRECTION_DEFINITIONS,
   HIT_DIRECTION_GROUPS,
@@ -99,7 +100,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="py-2 px-2 text-left font-semibold whitespace-nowrap">
-                  隊伍
+                  對戰組合
                 </th>
                 {inningRuns.map((item) => (
                   <th
@@ -520,8 +521,16 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
             ))}
 
             <div className="space-y-1.5 pt-1 border-t border-slate-100">
-              <div className="flex items-baseline justify-between text-xs">
-                <span className="font-semibold text-slate-700">擊球型態</span>
+              <div className="flex flex-wrap items-baseline justify-between gap-2 text-xs">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-semibold text-slate-700">擊球型態</span>
+                  <span className="text-slate-400" aria-hidden="true">
+                    ·
+                  </span>
+                  <span className="font-mono-tabular font-semibold text-[#1E3A8A]">
+                    滾飛比 {formatGroundFlyRatio(hitTypeStats)}
+                  </span>
+                </div>
                 <span className="font-mono-tabular text-slate-500">
                   共 {hitTypeStats.totalRecorded} 球
                 </span>

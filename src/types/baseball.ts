@@ -52,6 +52,9 @@ export interface HitTypeDefinition {
 export interface HitTypeSummary {
   totalRecorded: number;
   byCode: Record<HitTypeCode, number>;
+  gbCount: number;
+  airCount: number;
+  groundFlyRatio: number | null;
 }
 
 export interface HitDirectionDefinition {

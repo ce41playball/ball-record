@@ -285,7 +285,7 @@ export const HIT_TYPE_DEFINITIONS: Record<HitTypeCode, HitTypeDefinition> = {
   GB: { code: 'GB', label: '滾地球' },
 };
 
-export const HIT_TYPE_CODES: HitTypeCode[] = ['LD', 'FB', 'GB'];
+export const HIT_TYPE_CODES: HitTypeCode[] = ['GB', 'LD', 'FB'];
 
 export function calculateHitTypeStats(
   plateAppearances: PlateAppearance[],
@@ -308,10 +308,23 @@ export function calculateHitTypeStats(
     totalRecorded += 1;
   }
 
+  const gbCount = byCode.GB;
+  const airCount = byCode.LD + byCode.FB;
+  const groundFlyRatio = airCount > 0 ? gbCount / airCount : null;
+
   return {
     totalRecorded,
     byCode,
+    gbCount,
+    airCount,
+    groundFlyRatio,
   };
+}
+
+export function formatGroundFlyRatio(summary: HitTypeSummary): string {
+  if (summary.totalRecorded === 0) return '---';
+  if (summary.airCount === 0) return `${summary.gbCount}:0`;
+  return `${(summary.gbCount / summary.airCount).toFixed(2)} (${summary.gbCount}:${summary.airCount})`;
 }
 
 export function countRunners(bases: BasesState): number {
@@ -650,7 +663,9 @@ export function formatGameSummaryText(game: GameRecord): string {
     const typeLine = HIT_TYPE_CODES.map(
       (c) => `${HIT_TYPE_DEFINITIONS[c].label} ${hitTypeSummary.byCode[c]}`
     ).join(' / ');
-    lines.push(`擊球型態（共 ${hitTypeSummary.totalRecorded} 球）：${typeLine}`);
+    lines.push(
+      `擊球型態（共 ${hitTypeSummary.totalRecorded} 球 · 滾飛比 ${formatGroundFlyRatio(hitTypeSummary)}）：${typeLine}`
+    );
   }
 
   return lines.join('\n');
@@ -725,7 +740,15 @@ export function generateCsvExport(game: GameRecord): string {
   }
 
   rows.push('');
-  rows.push(['擊球型態統計', `共 ${hitTypeSummary.totalRecorded} 球`].map(escape).join(','));
+  rows.push(
+    [
+      '擊球型態統計',
+      `共 ${hitTypeSummary.totalRecorded} 球`,
+      `滾飛比 ${formatGroundFlyRatio(hitTypeSummary)}`,
+    ]
+      .map(escape)
+      .join(',')
+  );
   rows.push(['擊球型態', '代碼', '次數', '佔比'].map(escape).join(','));
   for (const code of HIT_TYPE_CODES) {
     const def = HIT_TYPE_DEFINITIONS[code];
