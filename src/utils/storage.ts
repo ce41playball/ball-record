@@ -9,6 +9,18 @@ export interface StoredAppState {
 
 export const MAX_LINEUP_SLOTS = 15;
 
+const LEGACY_STARTER_DEFAULT_NAMES: Record<number, string> = {
+  1: '第一棒選手',
+  2: '第二棒選手',
+  3: '第三棒選手',
+  4: '第四棒選手',
+  5: '第五棒選手',
+  6: '第六棒選手',
+  7: '第七棒選手',
+  8: '第八棒選手',
+  9: '第九棒選手',
+};
+
 const LEGACY_EXTRA_DEFAULT_NAMES: Record<number, string> = {
   10: '第十棒選手',
   11: '第十一棒選手',
@@ -25,15 +37,15 @@ export function createDefaultLineup(): PlayerLineupSlot[] {
     '', '', '', '', '',
   ];
   const defaultNames = [
-    '第一棒選手',
-    '第二棒選手',
-    '第三棒選手',
-    '第四棒選手',
-    '第五棒選手',
-    '第六棒選手',
-    '第七棒選手',
-    '第八棒選手',
-    '第九棒選手',
+    '第一棒',
+    '第二棒',
+    '第三棒',
+    '第四棒',
+    '第五棒',
+    '第六棒',
+    '第七棒',
+    '第八棒',
+    '第九棒',
     '',
     '',
     '',
@@ -46,6 +58,7 @@ export function createDefaultLineup(): PlayerLineupSlot[] {
     slot: i + 1,
     number: defaultNumbers[i],
     name: defaultNames[i],
+    position: '',
   }));
 }
 
@@ -67,9 +80,15 @@ function normalizeLineup(
       !hasPa &&
       saved.name === LEGACY_EXTRA_DEFAULT_NAMES[def.slot]
     ) {
-      return { ...saved, name: '', number: '' };
+      return { ...saved, name: '', number: '', position: saved.position ?? '' };
     }
-    return saved;
+    if (
+      def.slot <= 9 &&
+      saved.name === LEGACY_STARTER_DEFAULT_NAMES[def.slot]
+    ) {
+      return { ...saved, name: def.name, position: saved.position ?? '' };
+    }
+    return { ...saved, position: saved.position ?? '' };
   });
 }
 

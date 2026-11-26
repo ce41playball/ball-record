@@ -532,6 +532,7 @@ export function calculatePlayerStats(
       slot: member.slot,
       number: member.number,
       name: member.name,
+      position: member.position ?? '',
       pa: pas.length,
       ab,
       h,
@@ -626,8 +627,9 @@ export function formatGameSummaryText(game: GameRecord): string {
       p.outcomes.length > 0
         ? p.outcomes.map((o) => OUTCOME_DEFINITIONS[o].shortLabel).join(' / ')
         : '尚無打席';
+    const posLabel = p.position.trim() ? ` [${p.position.trim()}]` : '';
     lines.push(
-      `${p.slot}棒 #${p.number || '-'} ${p.name}：${p.ab}-${p.h} (${p.rbi}打點, AVG ${formatAvg(p.avg)})｜${outcomeStr}`
+      `${p.slot}棒${posLabel} #${p.number || '-'} ${p.name}：${p.ab}-${p.h} (${p.rbi}打點, AVG ${formatAvg(p.avg)})｜${outcomeStr}`
     );
   }
   const directionSummary = calculateHitDirectionStats(game.plateAppearances);
@@ -669,7 +671,7 @@ export function generateCsvExport(game: GameRecord): string {
   );
   rows.push('');
   rows.push(
-    ['棒次', '背號', '姓名', '打席(PA)', '打數(AB)', '安打(H)', '一安', '二安', '三安', '全壘打', '打點(RBI)', '保送(BB)', '觸身(HBP)', '三振(SO)', '打擊率(AVG)', '上壘率(OBP)', '長打率(SLG)', '打席歷程']
+    ['棒次', '守備位置', '背號', '姓名', '打席(PA)', '打數(AB)', '安打(H)', '一安', '二安', '三安', '全壘打', '打點(RBI)', '保送(BB)', '觸身(HBP)', '三振(SO)', '打擊率(AVG)', '上壘率(OBP)', '長打率(SLG)', '打席歷程']
       .map(escape)
       .join(',')
   );
@@ -681,6 +683,7 @@ export function generateCsvExport(game: GameRecord): string {
     rows.push(
       [
         `${p.slot}棒`,
+        p.position,
         p.number,
         p.name,
         p.pa,

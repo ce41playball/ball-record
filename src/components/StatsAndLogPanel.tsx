@@ -218,9 +218,6 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
           <h2 className="text-base font-bold text-slate-900">
             團隊打擊紀錄
           </h2>
-          <span className="text-xs text-slate-500 font-mono-tabular">
-            團隊打點 {totals.rbi} · 保送 {totals.bb} · 全壘打 {totals.hr}
-          </span>
         </div>
 
         <div className="overflow-x-auto -mx-2 px-2">
@@ -263,14 +260,14 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                       <span className="font-mono-tabular font-bold text-[#1E3A8A]">
                         {p.slot}棒
                       </span>
+                      {p.position.trim() && (
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          {p.position.trim()}
+                        </span>
+                      )}
                       <span className="font-semibold text-slate-900">
                         {p.name}
                       </span>
-                      {p.number && (
-                        <span className="font-mono-tabular text-[11px] text-slate-400">
-                          #{p.number}
-                        </span>
-                      )}
                     </div>
                     {p.outcomes.length > 0 && (
                       <div className="text-[11px] text-slate-500 mt-0.5 truncate max-w-[170px]">
@@ -301,6 +298,33 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-slate-200 bg-slate-50/90 text-slate-900">
+                <td className="py-2.5 pr-2">
+                  <div className="font-bold text-[#1E3A8A] whitespace-nowrap">
+                    全隊合計
+                  </div>
+                </td>
+                <td className="py-2.5 px-1.5 text-right font-mono-tabular font-bold">
+                  {totals.ab}
+                </td>
+                <td className="py-2.5 px-1.5 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                  {totals.h}
+                </td>
+                <td className="py-2.5 px-1.5 text-right font-mono-tabular font-bold">
+                  {totals.hr}
+                </td>
+                <td className="py-2.5 px-1.5 text-right font-mono-tabular font-bold">
+                  {totals.rbi}
+                </td>
+                <td className="py-2.5 px-1.5 text-right font-mono-tabular font-bold">
+                  {totals.bb}
+                </td>
+                <td className="py-2.5 pl-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                  {formatAvg(totals.avg)}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </section>
@@ -347,12 +371,12 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
           </select>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        <div className="space-y-4">
           {/* Baseball Field Spray Zone Visual */}
-          <div className="sm:col-span-5 flex justify-center">
+          <div className="flex justify-center">
             <svg
               viewBox="0 0 220 184"
-              className="w-full max-w-[220px] h-auto"
+              className="w-full max-w-[340px] h-auto"
               role="img"
               aria-label="球場擊球方向分佈圖"
             >
@@ -445,7 +469,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
           </div>
 
           {/* Zone Breakdown Counts */}
-          <div className="sm:col-span-7 space-y-2.5">
+          <div className="space-y-2.5">
             {HIT_DIRECTION_GROUPS.map((group) => (
               <div key={group.id} className="space-y-1.5">
                 <div className="flex items-baseline justify-between text-xs">

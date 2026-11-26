@@ -226,15 +226,48 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
           </p>
         </div>
 
+        <datalist id="fielding-positions-list">
+          <option value="投" />
+          <option value="捕" />
+          <option value="一" />
+          <option value="二" />
+          <option value="三" />
+          <option value="遊" />
+          <option value="左" />
+          <option value="中" />
+          <option value="右" />
+          <option value="SF" />
+          <option value="DH" />
+        </datalist>
+
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-semibold text-slate-400 px-0.5">
+          <span className="w-8 sm:w-9 shrink-0">棒次</span>
+          <span className="w-16 sm:w-[72px] text-center shrink-0">守備位置</span>
+          <span className="w-12 sm:w-14 text-center shrink-0">背號</span>
+          <span className="flex-1 min-w-0">球員姓名</span>
+        </div>
+
         <div className="space-y-2">
           {activeGame.lineup.map((member) => (
             <div
               key={member.slot}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 sm:gap-2"
             >
-              <span className="font-mono-tabular text-xs font-bold text-[#1E3A8A] w-9 shrink-0">
+              <span className="font-mono-tabular text-xs font-bold text-[#1E3A8A] w-8 sm:w-9 shrink-0">
                 {member.slot}棒
               </span>
+              <input
+                type="text"
+                list="fielding-positions-list"
+                maxLength={6}
+                placeholder="守位"
+                value={member.position ?? ''}
+                onChange={(e) =>
+                  onUpdateLineupMember(member.slot, { position: e.target.value })
+                }
+                aria-label={`${member.slot}棒守備位置`}
+                className="w-16 sm:w-[72px] h-11 px-1.5 sm:px-2 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:border-[#1E3A8A] shrink-0"
+              />
               <input
                 type="text"
                 inputMode="numeric"
@@ -245,7 +278,7 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
                   onUpdateLineupMember(member.slot, { number: e.target.value })
                 }
                 aria-label={`${member.slot}棒背號`}
-                className="w-16 h-11 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-center font-mono-tabular text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#1E3A8A] shrink-0"
+                className="w-12 sm:w-14 h-11 px-1.5 sm:px-2 rounded-xl border border-slate-200 bg-slate-50 text-center font-mono-tabular text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-[#1E3A8A] shrink-0"
               />
               <input
                 type="text"
@@ -259,7 +292,7 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
                   onUpdateLineupMember(member.slot, { name: e.target.value })
                 }
                 aria-label={`${member.slot}棒姓名`}
-                className="flex-1 min-w-0 h-11 px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:border-[#1E3A8A]"
+                className="flex-1 min-w-0 h-11 px-2.5 sm:px-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:border-[#1E3A8A]"
               />
             </div>
           ))}

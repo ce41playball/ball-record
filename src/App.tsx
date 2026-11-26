@@ -422,9 +422,6 @@ export default function App() {
               autoAdvance={activeGame.autoAdvanceBatter}
               onSelectBatter={handleSelectBatter}
               onToggleAutoAdvance={handleToggleAutoAdvance}
-              onUpdatePlayerName={(slot, name) =>
-                handleUpdateLineupMember(slot, { name })
-              }
             />
 
             <OutcomeSelectorBlock

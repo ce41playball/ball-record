@@ -78,6 +78,7 @@ export interface PlayerLineupSlot {
   slot: number; // 1 to 15
   number: string; // jersey number, e.g. "07"
   name: string;
+  position?: string; // fielding position, e.g. "SS", "P", "CF"
 }
 
 export interface PlateAppearance {
@@ -127,6 +128,7 @@ export interface PlayerStats {
   slot: number;
   number: string;
   name: string;
+  position: string;
   pa: number;
   ab: number;
   h: number;
