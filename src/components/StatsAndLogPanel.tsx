@@ -28,7 +28,7 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
   );
 
   const scheduledPlayers = players.filter(
-    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+    (p) => p.slot <= 9 || p.name.trim() !== '' || p.pa > 0
   );
   const chronologicalLogs = game.plateAppearances;
 

@@ -10,6 +10,7 @@ export interface StoredAppState {
 export const MAX_LINEUP_SLOTS = 15;
 
 const LEGACY_EXTRA_DEFAULT_NAMES: Record<number, string> = {
+  10: '第十棒選手',
   11: '第十一棒選手',
   12: '第十二棒選手',
   13: '第十三棒選手',
@@ -20,7 +21,7 @@ const LEGACY_EXTRA_DEFAULT_NAMES: Record<number, string> = {
 export function createDefaultLineup(): PlayerLineupSlot[] {
   const defaultNumbers = [
     '01', '06', '24', '55', '18',
-    '09', '12', '27', '04', '10',
+    '09', '12', '27', '04', '',
     '', '', '', '', '',
   ];
   const defaultNames = [
@@ -33,7 +34,7 @@ export function createDefaultLineup(): PlayerLineupSlot[] {
     '第七棒選手',
     '第八棒選手',
     '第九棒選手',
-    '第十棒選手',
+    '',
     '',
     '',
     '',
@@ -62,7 +63,7 @@ function normalizeLineup(
     if (!saved) return def;
     const hasPa = plateAppearances.some((pa) => pa.batterSlot === def.slot);
     if (
-      def.slot >= 11 &&
+      def.slot >= 10 &&
       !hasPa &&
       saved.name === LEGACY_EXTRA_DEFAULT_NAMES[def.slot]
     ) {

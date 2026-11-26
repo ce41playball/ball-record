@@ -167,7 +167,7 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
             先發打序名單（1～{activeGame.lineup.length}棒）
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            第 11～15 棒姓名空白代表未安排出場，填寫姓名後將顯示於記分輸入頁面
+            第 10～15 棒姓名空白代表未安排出場，填寫姓名後將顯示於記分輸入頁面
           </p>
         </div>
 
@@ -195,7 +195,7 @@ export const LineupAndExportPanel: React.FC<LineupAndExportPanelProps> = ({
               <input
                 type="text"
                 placeholder={
-                  member.slot >= 11
+                  member.slot >= 10
                     ? `第 ${member.slot} 棒姓名（空白代表未出場）`
                     : `第 ${member.slot} 棒球員姓名`
                 }

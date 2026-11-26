@@ -87,7 +87,7 @@ export const OUTCOME_DEFINITIONS: Record<OutcomeCode, OutcomeDefinition> = {
   },
   HBP: {
     code: 'HBP',
-    label: '觸身球',
+    label: '觸身球上壘',
     shortLabel: '觸身',
     category: 'reach',
     countsAsAtBat: false,
@@ -190,12 +190,12 @@ export const OUTCOME_GROUPS: {
   {
     id: 'reach',
     title: '保送與上壘',
-    codes: ['BB', 'E', 'FC'],
+    codes: ['BB', 'HBP', 'E', 'FC'],
   },
   {
     id: 'out',
     title: '出局與犧牲',
-    codes: ['SO', 'GO', 'FO', 'DP', 'SF'],
+    codes: ['SO', 'GO', 'FO', 'DP', 'SAC', 'SF'],
   },
 ];
 
@@ -501,7 +501,7 @@ export function formatGameSummaryText(game: GameRecord): string {
   lines.push('');
   lines.push('--- 打者個人數據 ---');
   const exportPlayers = players.filter(
-    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+    (p) => p.slot <= 9 || p.name.trim() !== '' || p.pa > 0
   );
   for (const p of exportPlayers) {
     const outcomeStr =
@@ -534,7 +534,7 @@ export function generateCsvExport(game: GameRecord): string {
   );
 
   const exportPlayers = players.filter(
-    (p) => p.slot <= 10 || p.name.trim() !== '' || p.pa > 0
+    (p) => p.slot <= 9 || p.name.trim() !== '' || p.pa > 0
   );
   for (const p of exportPlayers) {
     rows.push(

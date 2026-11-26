@@ -208,7 +208,7 @@ export default function App() {
 
     updateActiveGame((g) => {
       const scheduledSlots = g.lineup
-        .filter((m) => m.slot <= 10 || m.name.trim() !== '')
+        .filter((m) => m.slot <= 9 || m.name.trim() !== '')
         .map((m) => m.slot);
       const currentIdx = scheduledSlots.indexOf(g.currentBatterSlot);
       const nextBatterSlot = g.autoAdvanceBatter
@@ -309,7 +309,7 @@ export default function App() {
         m.slot === slot ? { ...m, ...patch } : m
       );
       const clearedActiveExtra =
-        slot >= 11 &&
+        slot >= 10 &&
         patch.name !== undefined &&
         patch.name.trim() === '' &&
         g.currentBatterSlot === slot;
