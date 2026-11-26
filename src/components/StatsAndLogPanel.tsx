@@ -589,12 +589,30 @@ export const StatsAndLogPanel: React.FC<StatsAndLogPanelProps> = ({
           <ul className="divide-y divide-slate-100">
             {chronologicalLogs.map((pa, idx) => {
               const def = OUTCOME_DEFINITIONS[pa.outcome];
-              const categoryColor =
-                def.category === 'hit'
-                  ? 'text-emerald-700'
-                  : def.category === 'reach'
-                  ? 'text-amber-700'
-                  : 'text-rose-700';
+              const getLogOutcomeColor = () => {
+                switch (pa.outcome) {
+                  case '1B':
+                  case '2B':
+                  case '3B':
+                  case 'HR':
+                    return 'text-red-600';
+                  case 'E':
+                  case 'FC':
+                    return 'text-[#7C2D12]';
+                  case 'SAC':
+                  case 'SF':
+                  case 'BB':
+                  case 'HBP':
+                    return 'text-yellow-600';
+                  case 'SO':
+                  case 'GO':
+                  case 'FO':
+                  case 'DP':
+                  default:
+                    return 'text-black';
+                }
+              };
+              const categoryColor = getLogOutcomeColor();
 
               const occupiedBases = [
                 pa.basesAfter.first ? '一壘' : null,
