@@ -462,12 +462,12 @@ export const TeamCumulativeStatsPage: React.FC<
                       <th
                         key={col.key}
                         title={col.title}
-                        className="py-2.5 px-2 text-right font-semibold whitespace-nowrap"
+                        className="py-2.5 px-2 text-center font-semibold whitespace-nowrap"
                       >
                         <button
                           type="button"
                           onClick={() => handleSort(col.key)}
-                          className={`inline-flex items-center justify-end gap-0.5 hover:text-[#1E3A8A] transition-colors whitespace-nowrap ${
+                          className={`inline-flex items-center justify-center gap-0.5 hover:text-[#1E3A8A] transition-colors whitespace-nowrap ${
                             isSorted ? 'text-[#1E3A8A] font-bold' : ''
                           }`}
                         >
@@ -488,7 +488,7 @@ export const TeamCumulativeStatsPage: React.FC<
                       </th>
                     );
                   })}
-                  <th className="py-2.5 pl-2 pr-1 text-right font-semibold whitespace-nowrap">
+                  <th className="py-2.5 px-2 text-center font-semibold whitespace-nowrap">
                     滾飛比
                   </th>
                 </tr>
@@ -523,29 +523,29 @@ export const TeamCumulativeStatsPage: React.FC<
                           {p.name}
                         </span>
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.gamesPlayed}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.pa}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.ab}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular font-semibold text-slate-900">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular font-semibold text-slate-900">
                         {p.h}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.singles}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.doubles}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.triples}
                       </td>
                       <td
-                        className={`py-2.5 px-2 text-right font-mono-tabular ${
+                        className={`py-2.5 px-2 text-center font-mono-tabular ${
                           p.hr > 0
                             ? 'font-bold text-rose-600'
                             : 'text-slate-600'
@@ -553,37 +553,37 @@ export const TeamCumulativeStatsPage: React.FC<
                       >
                         {p.hr}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.tb}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.rbi}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.bb}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.hbp}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {p.so}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
                         {p.sac + p.sf}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-slate-900">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-slate-900">
                         {formatAvg(p.avg)}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {formatAvg(p.obp)}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-700">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
                         {formatAvg(p.slg)}
                       </td>
-                      <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
                         {formatAvg(p.ops)}
                       </td>
-                      <td className="py-2.5 pl-2 pr-1 text-right font-mono-tabular text-slate-600 whitespace-nowrap">
+                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600 whitespace-nowrap">
                         {formatGroundFlyRatio(p.hitTypes)}
                       </td>
                     </tr>
@@ -595,61 +595,61 @@ export const TeamCumulativeStatsPage: React.FC<
                   <td className="py-2.5 pr-3 font-bold text-[#1E3A8A] whitespace-nowrap sticky left-0 bg-slate-50 z-10">
                     全隊合計
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.gamesCount}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.pa}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.ab}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
                     {totals.h}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.singles}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.doubles}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.triples}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-rose-600">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-rose-600">
                     {totals.hr}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.tb}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.rbi}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.bb}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.hbp}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.so}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {totals.sac + totals.sf}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
                     {formatAvg(totals.avg)}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {formatAvg(totals.obp)}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
                     {formatAvg(totals.slg)}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
                     {formatAvg(totals.ops)}
                   </td>
-                  <td className="py-2.5 pl-2 pr-1 text-right font-mono-tabular font-bold whitespace-nowrap">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold whitespace-nowrap">
                     {formatGroundFlyRatio(totals.hitTypes)}
                   </td>
                 </tr>
@@ -671,11 +671,9 @@ export const TeamCumulativeStatsPage: React.FC<
                     {selectedPlayer.name} · 逐場打擊明細
                   </h2>
                   <div className="text-xs text-slate-500 font-mono-tabular mt-0.5">
-                    {selectedPlayer.position && `${selectedPlayer.position} · `}
-                    {selectedPlayer.number && `#${selectedPlayer.number} · `}
-                    出賽 {selectedPlayer.gamesPlayed} 場 · 累積{' '}
-                    {selectedPlayer.ab} 打數 {selectedPlayer.h} 安打 · AVG{' '}
-                    {formatAvg(selectedPlayer.avg)}
+                    出賽 {selectedPlayer.gamesPlayed} 場 · 打擊率{' '}
+                    {formatAvg(selectedPlayer.avg)} · 上壘率{' '}
+                    {formatAvg(selectedPlayer.obp)}
                   </div>
                 </div>
                 <button

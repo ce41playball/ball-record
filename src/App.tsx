@@ -385,6 +385,7 @@ export default function App() {
         opponentName={activeGame.opponentName}
         teamRuns={totals.runs}
         opponentScore={activeGame.opponentScore}
+        teamAttackOrder={activeGame.teamAttackOrder}
         canUndo={activeGame.plateAppearances.length > 0}
         onUndo={handleUndoLastPa}
       />

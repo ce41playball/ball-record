@@ -1,11 +1,13 @@
 import React from 'react';
 import { Undo2 } from 'lucide-react';
+import { TeamAttackOrder } from '../types/baseball';
 
 interface TopScoreHeaderProps {
   teamName: string;
   opponentName: string;
   teamRuns: number;
   opponentScore: number;
+  teamAttackOrder: TeamAttackOrder;
   canUndo: boolean;
   onUndo: () => void;
 }
@@ -15,9 +17,12 @@ export const TopScoreHeader: React.FC<TopScoreHeaderProps> = ({
   opponentName,
   teamRuns,
   opponentScore,
+  teamAttackOrder,
   canUndo,
   onUndo,
 }) => {
+  const isSecond = teamAttackOrder === 'second';
+
   return (
     <header className="sticky top-0 z-30 h-12 bg-white/95 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-6xl mx-auto h-full px-4 flex items-center justify-between gap-4">
@@ -26,21 +31,43 @@ export const TopScoreHeader: React.FC<TopScoreHeaderProps> = ({
         </span>
 
         <div className="flex items-center gap-2 text-sm text-slate-700 min-w-0 truncate">
-          <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
-            {teamName}
-          </span>
-          <span className="font-display-num text-lg font-bold text-[#1E3A8A] tabular-nums whitespace-nowrap">
-            {teamRuns}
-          </span>
-          <span className="text-slate-400" aria-hidden="true">
-            :
-          </span>
-          <span className="font-display-num text-lg font-bold text-slate-900 tabular-nums whitespace-nowrap">
-            {opponentScore}
-          </span>
-          <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
-            {opponentName}
-          </span>
+          {isSecond ? (
+            <>
+              <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
+                {opponentName}
+              </span>
+              <span className="font-display-num text-lg font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                {opponentScore}
+              </span>
+              <span className="text-slate-400" aria-hidden="true">
+                :
+              </span>
+              <span className="font-display-num text-lg font-bold text-[#1E3A8A] tabular-nums whitespace-nowrap">
+                {teamRuns}
+              </span>
+              <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
+                {teamName}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
+                {teamName}
+              </span>
+              <span className="font-display-num text-lg font-bold text-[#1E3A8A] tabular-nums whitespace-nowrap">
+                {teamRuns}
+              </span>
+              <span className="text-slate-400" aria-hidden="true">
+                :
+              </span>
+              <span className="font-display-num text-lg font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                {opponentScore}
+              </span>
+              <span className="font-medium truncate max-w-[84px] sm:max-w-[140px]">
+                {opponentName}
+              </span>
+            </>
+          )}
         </div>
 
         <button
