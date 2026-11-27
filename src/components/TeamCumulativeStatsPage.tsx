@@ -453,7 +453,7 @@ export const TeamCumulativeStatsPage: React.FC<
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
-                  <th className="py-2.5 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-white z-10 min-w-[132px]">
+                  <th className="py-2.5 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-white z-10 min-w-[96px]">
                     選手
                   </th>
                   {sortColumns.map((col) => {
@@ -515,25 +515,13 @@ export const TeamCumulativeStatsPage: React.FC<
                           isSelected ? 'bg-blue-50' : 'bg-white'
                         }`}
                       >
-                        <div className="flex items-baseline gap-1.5">
-                          {p.position && (
-                            <span className="text-[11px] font-semibold text-slate-500">
-                              {p.position}
-                            </span>
-                          )}
-                          <span
-                            className={`font-semibold ${
-                              isSelected ? 'text-[#1E3A8A]' : 'text-slate-900'
-                            }`}
-                          >
-                            {p.name}
-                          </span>
-                          {p.number && (
-                            <span className="font-mono-tabular text-[11px] text-slate-400">
-                              #{p.number}
-                            </span>
-                          )}
-                        </div>
+                        <span
+                          className={`font-semibold ${
+                            isSelected ? 'text-[#1E3A8A]' : 'text-slate-900'
+                          }`}
+                        >
+                          {p.name}
+                        </span>
                       </td>
                       <td className="py-2.5 px-2 text-right font-mono-tabular text-slate-600">
                         {p.gamesPlayed}
@@ -729,11 +717,8 @@ export const TeamCumulativeStatsPage: React.FC<
                         <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
                           四壞
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
-                          三振
-                        </th>
                         <th className="py-2 pl-2 text-right font-semibold whitespace-nowrap">
-                          打擊率
+                          三振
                         </th>
                       </tr>
                     </thead>
@@ -780,11 +765,8 @@ export const TeamCumulativeStatsPage: React.FC<
                           <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
                             {gb.bb}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 pl-2 text-right font-mono-tabular text-slate-700">
                             {gb.so}
-                          </td>
-                          <td className="py-2.5 pl-2 text-right font-mono-tabular font-bold text-[#1E3A8A]">
-                            {formatAvg(gb.avg)}
                           </td>
                         </tr>
                       ))}
