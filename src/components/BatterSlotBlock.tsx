@@ -52,61 +52,67 @@ export const BatterSlotBlock: React.FC<BatterSlotBlockProps> = ({
         </button>
       </div>
 
-      {/* 1~15 Batting Order Grid (10~15 shown when name is filled in lineup) */}
-      <div className="grid grid-cols-3 gap-2">
-        {players
-          .filter((player) => player.slot <= 9 || player.name.trim() !== '')
-          .map((player) => {
-            const isSelected = player.slot === currentBatterSlot;
-            const displayName = player.name.trim() || '未命名選手';
-            const posText = player.position.trim();
-            return (
-              <button
-                key={player.slot}
-                type="button"
-                onClick={() => onSelectBatter(player.slot)}
-                aria-pressed={isSelected}
-                className={`min-h-[64px] p-2.5 rounded-xl border transition-all active:scale-[0.98] flex flex-col justify-between gap-1 text-left ${
-                  isSelected
-                    ? 'bg-[#1E3A8A] border-[#1E3A8A] text-white'
-                    : 'bg-white border-slate-200 text-slate-900 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-baseline justify-between gap-1 w-full">
-                  <div className="flex items-baseline gap-1 min-w-0">
-                    <span className="font-display-num text-base font-bold leading-none whitespace-nowrap">
+      {/* 1~15 Batting Order List (10~15 shown when name is filled in lineup) */}
+      {(() => {
+        const scheduledPlayers = players.filter(
+          (player) => player.slot <= 9 || player.name.trim() !== ''
+        );
+        const hasAnyPosition = scheduledPlayers.some(
+          (p) => p.position.trim() !== ''
+        );
+        return (
+          <div className="flex flex-col gap-1">
+            {scheduledPlayers.map((player) => {
+              const isSelected = player.slot === currentBatterSlot;
+              const displayName = player.name.trim() || '未命名選手';
+              const posText = player.position.trim();
+              return (
+                <button
+                  key={player.slot}
+                  type="button"
+                  onClick={() => onSelectBatter(player.slot)}
+                  aria-pressed={isSelected}
+                  className={`w-full min-h-[38px] px-2.5 py-1 rounded-lg border transition-all active:scale-[0.99] flex items-center justify-between gap-2 text-left ${
+                    isSelected
+                      ? 'bg-[#1E3A8A] border-[#1E3A8A] text-white'
+                      : 'bg-white border-slate-200 text-slate-900 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-display-num text-sm font-bold leading-none w-8 shrink-0 whitespace-nowrap">
                       {player.slot}棒
                     </span>
-                    {posText && (
+                    {hasAnyPosition && (
                       <span
-                        className={`text-[10px] font-semibold truncate ${
+                        className={`text-[11px] font-semibold w-6 shrink-0 truncate ${
                           isSelected ? 'text-blue-100' : 'text-[#1E3A8A]'
                         }`}
                       >
-                        {posText}
+                        {posText || '—'}
                       </span>
                     )}
+                    <span
+                      className={`text-xs font-semibold truncate ${
+                        isSelected ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
+                      {displayName}
+                    </span>
                   </div>
+
                   <span
-                    className={`font-mono-tabular text-[11px] whitespace-nowrap shrink-0 ${
-                      isSelected ? 'text-blue-200' : 'text-slate-500'
+                    className={`font-mono-tabular text-[11px] font-semibold whitespace-nowrap shrink-0 ${
+                      isSelected ? 'text-blue-100' : 'text-slate-500'
                     }`}
                   >
                     {player.ab > 0 ? `${player.ab}-${player.h}` : '0-0'}
                   </span>
-                </div>
-
-                <span
-                  className={`w-full text-xs sm:text-sm font-semibold truncate ${
-                    isSelected ? 'text-white' : 'text-slate-800'
-                  }`}
-                >
-                  {displayName}
-                </span>
-              </button>
-            );
-          })}
-      </div>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
     </section>
   );
 };
