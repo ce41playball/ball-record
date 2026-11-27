@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Minus, Plus, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw } from 'lucide-react';
 import {
   BasesState,
   HitDirectionCode,
@@ -154,85 +154,62 @@ export const RbiAndRunBlock: React.FC<RbiAndRunBlockProps> = ({
         </div>
       </div>
 
-      {/* Runs Scored Counter Button */}
+      {/* Runs Scored 0~4 Selector */}
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <span className="text-xs font-semibold text-slate-700">
             得分數（R）
           </span>
           <span className="font-mono-tabular text-xs font-bold text-emerald-700">
-            目前計數：{runsScored} 得分
+            {runsScored} 得分
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onSelectRuns(runsScored + 1)}
-            className="flex-1 min-h-[48px] px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
-          >
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            <span>增加得分 (+1)</span>
-            <span className="font-display-num text-xl font-bold ml-1 tabular-nums">
-              {runsScored}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelectRuns(Math.max(0, runsScored - 1))}
-            disabled={runsScored === 0}
-            aria-label="減少得分"
-            className={`min-h-[48px] min-w-[48px] rounded-xl border flex items-center justify-center transition-colors active:scale-[0.97] ${
-              runsScored > 0
-                ? 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800'
-                : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
-            }`}
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelectRuns(0)}
-            disabled={runsScored === 0}
-            className={`min-h-[48px] px-3.5 rounded-xl border text-xs font-semibold transition-colors whitespace-nowrap active:scale-[0.97] ${
-              runsScored > 0
-                ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
-            }`}
-          >
-            歸零
-          </button>
+        <div className="grid grid-cols-5 gap-2" role="group" aria-label="得分數">
+          {SCORE_OPTIONS.map((num) => {
+            const isSelected = runsScored === num;
+            return (
+              <button
+                key={`runs-${num}`}
+                type="button"
+                onClick={() => onSelectRuns(num)}
+                aria-pressed={isSelected}
+                className={`min-h-[46px] rounded-xl border font-display-num text-lg font-bold transition-all active:scale-[0.97] flex items-center justify-center ${
+                  isSelected
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100 hover:border-slate-300'
+                }`}
+              >
+                {num}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Compact Outs & Post-play Bases Adjustments */}
       <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-600">造成出局數</span>
-          <button
-            type="button"
-            onClick={() => onChangeOutsRecorded(Math.max(0, outsRecorded - 1))}
-            aria-label="減少造成出局數"
-            className="min-h-[38px] min-w-[38px] rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-800"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <span className="font-mono-tabular text-sm font-bold w-5 text-center text-rose-700">
-            {outsRecorded}
+        <div className="flex items-center gap-1.5" role="group" aria-label="造成出局數">
+          <span className="text-xs font-semibold text-slate-600 mr-1">
+            造成出局數
           </span>
-          <button
-            type="button"
-            onClick={() =>
-              onChangeOutsRecorded(
-                Math.min(Math.max(0, 3 - currentOuts), outsRecorded + 1)
-              )
-            }
-            aria-label="增加造成出局數"
-            className="min-h-[38px] min-w-[38px] rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-800"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
+          {([0, 1, 2] as const).map((num) => {
+            const isSelected = outsRecorded === num;
+            return (
+              <button
+                key={`outs-${num}`}
+                type="button"
+                onClick={() => onChangeOutsRecorded(num)}
+                aria-pressed={isSelected}
+                className={`min-h-[38px] min-w-[38px] px-2.5 py-1 rounded-lg border font-mono-tabular text-xs font-bold transition-colors active:scale-[0.97] flex items-center justify-center ${
+                  isSelected
+                    ? 'bg-rose-600 border-rose-700 text-white'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                {num}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex items-center gap-1.5" role="group" aria-label="打席後壘包">
