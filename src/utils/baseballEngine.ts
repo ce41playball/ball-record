@@ -1,5 +1,7 @@
 import {
   BasesState,
+  CumulativePlayerStats,
+  CumulativeTeamTotals,
   GameRecord,
   HitDirectionCode,
   HitDirectionDefinition,
@@ -11,6 +13,7 @@ import {
   OutcomeCode,
   OutcomeDefinition,
   PlateAppearance,
+  PlayerGameBreakdown,
   PlayerLineupSlot,
   PlayerStats,
   PlayPrediction,
@@ -794,3 +797,512 @@ export function generateCsvExport(game: GameRecord): string {
   // Add UTF-8 BOM so Excel opens Traditional Chinese cleanly
   return '\uFEFF' + rows.join('\r\n');
 }
+
+function createEmptyHitDirectionSummary(): HitDirectionSummary {
+  return {
+    totalRecorded: 0,
+    outfieldCount: 0,
+    infieldCount: 0,
+    byCode: {
+      LF: 0,
+      CF: 0,
+      RF: 0,
+      P: 0,
+      C: 0,
+      '1B': 0,
+      '2B': 0,
+      '3B': 0,
+      SS: 0,
+    },
+  };
+}
+
+function createEmptyHitTypeSummary(): HitTypeSummary {
+  return {
+    totalRecorded: 0,
+    byCode: { LD: 0, FB: 0, GB: 0 },
+    gbCount: 0,
+    airCount: 0,
+    groundFlyRatio: null,
+  };
+}
+
+function recordHitDetails(
+  directions: HitDirectionSummary,
+  types: HitTypeSummary,
+  pa: PlateAppearance
+): void {
+  if (pa.hitDirection && pa.hitDirection in HIT_DIRECTION_DEFINITIONS) {
+    directions.byCode[pa.hitDirection] += 1;
+    directions.totalRecorded += 1;
+    if (HIT_DIRECTION_DEFINITIONS[pa.hitDirection].zone === 'outfield') {
+      directions.outfieldCount += 1;
+    } else {
+      directions.infieldCount += 1;
+    }
+  }
+  if (pa.hitType && pa.hitType in HIT_TYPE_DEFINITIONS) {
+    types.byCode[pa.hitType] += 1;
+    types.totalRecorded += 1;
+    types.gbCount = types.byCode.GB;
+    types.airCount = types.byCode.LD + types.byCode.FB;
+    types.groundFlyRatio =
+      types.airCount > 0 ? types.gbCount / types.airCount : null;
+  }
+}
+
+export function calculateCumulativeTeamStats(
+  games: GameRecord[],
+  teamFilter: string | 'all' = 'all'
+): {
+  players: CumulativePlayerStats[];
+  totals: CumulativeTeamTotals;
+  availableTeams: string[];
+} {
+  const teamSet = new Set<string>();
+  for (const g of games) {
+    const t = g.teamName.trim();
+    if (t) teamSet.add(t);
+  }
+  const availableTeams = Array.from(teamSet);
+
+  const filteredGames = games
+    .filter((g) =>
+      teamFilter === 'all' ? true : g.teamName.trim() === teamFilter
+    )
+    .slice()
+    .sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return b.updatedAt - a.updatedAt;
+    });
+
+  interface MutablePlayerAcc {
+    key: string;
+    name: string;
+    number: string;
+    position: string;
+    lastSlot: number;
+    gameIds: Set<string>;
+    pa: number;
+    ab: number;
+    h: number;
+    singles: number;
+    doubles: number;
+    triples: number;
+    hr: number;
+    rbi: number;
+    bb: number;
+    hbp: number;
+    so: number;
+    sac: number;
+    sf: number;
+    e: number;
+    fc: number;
+    hitDirections: HitDirectionSummary;
+    hitTypes: HitTypeSummary;
+    breakdownMap: Map<
+      string,
+      {
+        game: GameRecord;
+        pa: number;
+        ab: number;
+        h: number;
+        hr: number;
+        rbi: number;
+        bb: number;
+        so: number;
+      }
+    >;
+  }
+
+  const playerMap = new Map<string, MutablePlayerAcc>();
+
+  const ensurePlayer = (
+    name: string,
+    number: string,
+    position: string,
+    slot: number
+  ): MutablePlayerAcc => {
+    const key = name.trim();
+    const existing = playerMap.get(key);
+    if (existing) {
+      if (!existing.number && number.trim()) {
+        existing.number = number.trim();
+      }
+      if (!existing.position && position.trim()) {
+        existing.position = position.trim();
+      }
+      return existing;
+    }
+    const created: MutablePlayerAcc = {
+      key,
+      name: key,
+      number: number.trim(),
+      position: position.trim(),
+      lastSlot: slot,
+      gameIds: new Set(),
+      pa: 0,
+      ab: 0,
+      h: 0,
+      singles: 0,
+      doubles: 0,
+      triples: 0,
+      hr: 0,
+      rbi: 0,
+      bb: 0,
+      hbp: 0,
+      so: 0,
+      sac: 0,
+      sf: 0,
+      e: 0,
+      fc: 0,
+      hitDirections: createEmptyHitDirectionSummary(),
+      hitTypes: createEmptyHitTypeSummary(),
+      breakdownMap: new Map(),
+    };
+    playerMap.set(key, created);
+    return created;
+  };
+
+  let totalRuns = 0;
+  let gamesWithPaCount = 0;
+  const teamHitDirections = createEmptyHitDirectionSummary();
+  const teamHitTypes = createEmptyHitTypeSummary();
+
+  // Filtered games are sorted most recent first, so the first encountered number/position is the latest.
+  for (const game of filteredGames) {
+    if (game.plateAppearances.length > 0) {
+      gamesWithPaCount += 1;
+    }
+
+    const lineupBySlot = new Map<number, PlayerLineupSlot>();
+    for (const member of game.lineup) {
+      lineupBySlot.set(member.slot, member);
+      const trimmedName = member.name.trim();
+      if (trimmedName) {
+        ensurePlayer(
+          trimmedName,
+          member.number ?? '',
+          member.position ?? '',
+          member.slot
+        );
+      }
+    }
+
+    for (const pa of game.plateAppearances) {
+      totalRuns += pa.runsScored;
+      recordHitDetails(teamHitDirections, teamHitTypes, pa);
+
+      const lineupMember = lineupBySlot.get(pa.batterSlot);
+      const resolvedName =
+        lineupMember?.name.trim() ||
+        pa.batterName.trim() ||
+        `${pa.batterSlot}棒`;
+      const resolvedNumber =
+        lineupMember?.number?.trim() || pa.batterNumber?.trim() || '';
+      const resolvedPosition = lineupMember?.position?.trim() || '';
+
+      const acc = ensurePlayer(
+        resolvedName,
+        resolvedNumber,
+        resolvedPosition,
+        pa.batterSlot
+      );
+      acc.gameIds.add(game.id);
+      acc.pa += 1;
+
+      const def = OUTCOME_DEFINITIONS[pa.outcome];
+      if (def.countsAsAtBat) acc.ab += 1;
+      if (def.isHit) acc.h += 1;
+      if (pa.outcome === '1B') acc.singles += 1;
+      if (pa.outcome === '2B') acc.doubles += 1;
+      if (pa.outcome === '3B') acc.triples += 1;
+      if (pa.outcome === 'HR') acc.hr += 1;
+      if (pa.outcome === 'BB') acc.bb += 1;
+      if (pa.outcome === 'HBP') acc.hbp += 1;
+      if (pa.outcome === 'SO') acc.so += 1;
+      if (pa.outcome === 'SAC') acc.sac += 1;
+      if (pa.outcome === 'SF') acc.sf += 1;
+      if (pa.outcome === 'E') acc.e += 1;
+      if (pa.outcome === 'FC') acc.fc += 1;
+      acc.rbi += pa.rbi;
+
+      recordHitDetails(acc.hitDirections, acc.hitTypes, pa);
+
+      let gameEntry = acc.breakdownMap.get(game.id);
+      if (!gameEntry) {
+        gameEntry = {
+          game,
+          pa: 0,
+          ab: 0,
+          h: 0,
+          hr: 0,
+          rbi: 0,
+          bb: 0,
+          so: 0,
+        };
+        acc.breakdownMap.set(game.id, gameEntry);
+      }
+      gameEntry.pa += 1;
+      if (def.countsAsAtBat) gameEntry.ab += 1;
+      if (def.isHit) gameEntry.h += 1;
+      if (pa.outcome === 'HR') gameEntry.hr += 1;
+      if (pa.outcome === 'BB') gameEntry.bb += 1;
+      if (pa.outcome === 'SO') gameEntry.so += 1;
+      gameEntry.rbi += pa.rbi;
+    }
+  }
+
+  const players: CumulativePlayerStats[] = Array.from(playerMap.values()).map(
+    (acc) => {
+      const tb =
+        acc.singles + acc.doubles * 2 + acc.triples * 3 + acc.hr * 4;
+      const avg = acc.ab > 0 ? acc.h / acc.ab : null;
+      const obpDenom = acc.ab + acc.bb + acc.hbp + acc.sf;
+      const obp =
+        obpDenom > 0 ? (acc.h + acc.bb + acc.hbp) / obpDenom : null;
+      const slg = acc.ab > 0 ? tb / acc.ab : null;
+      const ops = obp !== null && slg !== null ? obp + slg : null;
+
+      const gameBreakdown: PlayerGameBreakdown[] = Array.from(
+        acc.breakdownMap.values()
+      ).map((item) => ({
+        gameId: item.game.id,
+        title: item.game.title,
+        date: item.game.date,
+        teamName: item.game.teamName,
+        opponentName: item.game.opponentName,
+        pa: item.pa,
+        ab: item.ab,
+        h: item.h,
+        hr: item.hr,
+        rbi: item.rbi,
+        bb: item.bb,
+        so: item.so,
+        avg: item.ab > 0 ? item.h / item.ab : null,
+      }));
+
+      return {
+        key: acc.key,
+        name: acc.name,
+        number: acc.number,
+        position: acc.position,
+        lastSlot: acc.lastSlot,
+        gamesPlayed: acc.gameIds.size,
+        pa: acc.pa,
+        ab: acc.ab,
+        h: acc.h,
+        singles: acc.singles,
+        doubles: acc.doubles,
+        triples: acc.triples,
+        hr: acc.hr,
+        tb,
+        rbi: acc.rbi,
+        bb: acc.bb,
+        hbp: acc.hbp,
+        so: acc.so,
+        sac: acc.sac,
+        sf: acc.sf,
+        e: acc.e,
+        fc: acc.fc,
+        avg,
+        obp,
+        slg,
+        ops,
+        hitDirections: acc.hitDirections,
+        hitTypes: acc.hitTypes,
+        gameBreakdown,
+      };
+    }
+  );
+
+  players.sort((a, b) => {
+    if (b.pa !== a.pa) return b.pa - a.pa;
+    return a.lastSlot - b.lastSlot;
+  });
+
+  const paTotal = players.reduce((s, p) => s + p.pa, 0);
+  const abTotal = players.reduce((s, p) => s + p.ab, 0);
+  const hTotal = players.reduce((s, p) => s + p.h, 0);
+  const singlesTotal = players.reduce((s, p) => s + p.singles, 0);
+  const doublesTotal = players.reduce((s, p) => s + p.doubles, 0);
+  const triplesTotal = players.reduce((s, p) => s + p.triples, 0);
+  const hrTotal = players.reduce((s, p) => s + p.hr, 0);
+  const tbTotal = players.reduce((s, p) => s + p.tb, 0);
+  const rbiTotal = players.reduce((s, p) => s + p.rbi, 0);
+  const bbTotal = players.reduce((s, p) => s + p.bb, 0);
+  const hbpTotal = players.reduce((s, p) => s + p.hbp, 0);
+  const soTotal = players.reduce((s, p) => s + p.so, 0);
+  const sacTotal = players.reduce((s, p) => s + p.sac, 0);
+  const sfTotal = players.reduce((s, p) => s + p.sf, 0);
+
+  const avgTotal = abTotal > 0 ? hTotal / abTotal : null;
+  const obpDenomTotal = abTotal + bbTotal + hbpTotal + sfTotal;
+  const obpTotal =
+    obpDenomTotal > 0 ? (hTotal + bbTotal + hbpTotal) / obpDenomTotal : null;
+  const slgTotal = abTotal > 0 ? tbTotal / abTotal : null;
+  const opsTotal =
+    obpTotal !== null && slgTotal !== null ? obpTotal + slgTotal : null;
+
+  return {
+    players,
+    availableTeams,
+    totals: {
+      gamesCount: filteredGames.length,
+      gamesWithPaCount,
+      playersCount: players.length,
+      activePlayersCount: players.filter((p) => p.pa > 0).length,
+      pa: paTotal,
+      ab: abTotal,
+      h: hTotal,
+      singles: singlesTotal,
+      doubles: doublesTotal,
+      triples: triplesTotal,
+      hr: hrTotal,
+      tb: tbTotal,
+      rbi: rbiTotal,
+      runs: totalRuns,
+      bb: bbTotal,
+      hbp: hbpTotal,
+      so: soTotal,
+      sac: sacTotal,
+      sf: sfTotal,
+      avg: avgTotal,
+      obp: obpTotal,
+      slg: slgTotal,
+      ops: opsTotal,
+      hitDirections: teamHitDirections,
+      hitTypes: teamHitTypes,
+    },
+  };
+}
+
+export function formatCumulativeTeamSummaryText(
+  players: CumulativePlayerStats[],
+  totals: CumulativeTeamTotals,
+  teamLabel: string
+): string {
+  const lines: string[] = [];
+  lines.push(`【團隊打擊成績｜${teamLabel}】`);
+  lines.push(
+    `累積 ${totals.gamesCount} 場比賽（${totals.gamesWithPaCount} 場已開打）· ${totals.activePlayersCount} 位出賽選手`
+  );
+  lines.push(
+    `團隊合計：${totals.pa} 打席 / ${totals.ab} 打數 / ${totals.h} 安打（${totals.hr} 全壘打）· ${totals.runs} 得分 · ${totals.rbi} 打點 · AVG ${formatAvg(totals.avg)} · OPS ${formatAvg(totals.ops)}`
+  );
+  lines.push('');
+  lines.push('--- 選手個人累積數據 ---');
+  for (const p of players) {
+    const posStr = p.position ? `[${p.position}] ` : '';
+    const numStr = p.number ? `#${p.number} ` : '';
+    lines.push(
+      `${posStr}${numStr}${p.name}：${p.gamesPlayed}場 · ${p.ab}-${p.h} (${p.hr}HR, ${p.rbi}RBI, ${p.bb}BB, ${p.so}SO) · AVG ${formatAvg(p.avg)} · OPS ${formatAvg(p.ops)}`
+    );
+  }
+  return lines.join('\n');
+}
+
+export function generateCumulativeTeamCsv(
+  players: CumulativePlayerStats[],
+  totals: CumulativeTeamTotals,
+  teamLabel: string
+): string {
+  const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+  const rows: string[] = [];
+  rows.push(['團隊累積打擊成績', teamLabel, '累積場次', totals.gamesCount].map(escape).join(','));
+  rows.push('');
+  rows.push(
+    [
+      '選手姓名',
+      '守備位置',
+      '背號',
+      '出賽場數',
+      '打席(PA)',
+      '打數(AB)',
+      '安打(H)',
+      '一安(1B)',
+      '二安(2B)',
+      '三安(3B)',
+      '全壘打(HR)',
+      '壘打數(TB)',
+      '打點(RBI)',
+      '四壞(BB)',
+      '觸身(HBP)',
+      '三振(SO)',
+      '犧觸(SAC)',
+      '高飛犧牲(SF)',
+      '打擊率(AVG)',
+      '上壘率(OBP)',
+      '長打率(SLG)',
+      'OPS',
+      '滾飛比',
+    ]
+      .map(escape)
+      .join(',')
+  );
+
+  for (const p of players) {
+    rows.push(
+      [
+        p.name,
+        p.position,
+        p.number,
+        p.gamesPlayed,
+        p.pa,
+        p.ab,
+        p.h,
+        p.singles,
+        p.doubles,
+        p.triples,
+        p.hr,
+        p.tb,
+        p.rbi,
+        p.bb,
+        p.hbp,
+        p.so,
+        p.sac,
+        p.sf,
+        formatAvg(p.avg),
+        formatAvg(p.obp),
+        formatAvg(p.slg),
+        formatAvg(p.ops),
+        formatGroundFlyRatio(p.hitTypes),
+      ]
+        .map(escape)
+        .join(',')
+    );
+  }
+
+  rows.push(
+    [
+      '全隊合計',
+      '',
+      '',
+      totals.gamesCount,
+      totals.pa,
+      totals.ab,
+      totals.h,
+      totals.singles,
+      totals.doubles,
+      totals.triples,
+      totals.hr,
+      totals.tb,
+      totals.rbi,
+      totals.bb,
+      totals.hbp,
+      totals.so,
+      totals.sac,
+      totals.sf,
+      formatAvg(totals.avg),
+      formatAvg(totals.obp),
+      formatAvg(totals.slg),
+      formatAvg(totals.ops),
+      formatGroundFlyRatio(totals.hitTypes),
+    ]
+      .map(escape)
+      .join(',')
+  );
+
+  return '\uFEFF' + rows.join('\r\n');
+}
+

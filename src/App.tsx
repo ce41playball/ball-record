@@ -13,6 +13,7 @@ import { MobileBottomNav, MobileTab } from './components/MobileBottomNav';
 import { OutcomeSelectorBlock } from './components/OutcomeSelectorBlock';
 import { RbiAndRunBlock } from './components/RbiAndRunBlock';
 import { StatsAndLogPanel } from './components/StatsAndLogPanel';
+import { TeamCumulativeStatsPage } from './components/TeamCumulativeStatsPage';
 import { TopScoreHeader } from './components/TopScoreHeader';
 import {
   BasesState,
@@ -44,6 +45,7 @@ export default function App() {
     loadStoredState()
   );
   const [mobileTab, setMobileTab] = useState<MobileTab>('record');
+  const [desktopPage, setDesktopPage] = useState<'game' | 'teamStats'>('game');
   const [desktopRightTab, setDesktopRightTab] = useState<'stats' | 'manage'>(
     'stats'
   );
@@ -388,7 +390,73 @@ export default function App() {
       />
 
       <main className="max-w-6xl mx-auto px-4 pt-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Desktop Page Switcher */}
+        <div className="hidden lg:flex items-center justify-between gap-4 mb-4">
+          <div
+            className="inline-flex items-center gap-1 p-1 bg-slate-200/70 rounded-xl"
+            role="tablist"
+            aria-label="頁面切換"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={desktopPage === 'game'}
+              onClick={() => setDesktopPage('game')}
+              className={`min-h-[40px] px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                desktopPage === 'game'
+                  ? 'bg-white text-[#1E3A8A] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              單場記分與統計
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={desktopPage === 'teamStats'}
+              onClick={() => setDesktopPage('teamStats')}
+              className={`min-h-[40px] px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                desktopPage === 'teamStats'
+                  ? 'bg-white text-[#1E3A8A] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              團隊打擊成績
+            </button>
+          </div>
+
+          <div className="text-xs text-slate-500 font-mono-tabular">
+            <span>目前場次：{activeGame.title}</span>
+            <span className="mx-1.5" aria-hidden="true">
+              ·
+            </span>
+            <span>本機共 {appState.games.length} 場比賽</span>
+          </div>
+        </div>
+
+        <div
+          className={`${
+            mobileTab === 'teamStats' ? 'block' : 'hidden'
+          } ${desktopPage === 'teamStats' ? 'lg:block' : 'lg:hidden'}`}
+        >
+          <TeamCumulativeStatsPage
+            games={appState.games}
+            activeGameId={activeGame.id}
+            onJumpToGame={(gameId) => {
+              handleSwitchGame(gameId);
+              setDesktopPage('game');
+              setMobileTab('record');
+            }}
+          />
+        </div>
+
+        <div
+          className={`${
+            mobileTab !== 'teamStats' ? 'grid' : 'hidden'
+          } ${
+            desktopPage === 'game' ? 'lg:grid' : 'lg:hidden'
+          } grid-cols-1 lg:grid-cols-12 gap-5 items-start`}
+        >
           {/* Left / Mobile Record Tab: Live Field + 3 Required Blocks */}
           <div
             className={`lg:col-span-7 space-y-4 ${

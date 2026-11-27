@@ -171,3 +171,80 @@ export interface PlayPrediction {
   rbi: number;
   inningEnding: boolean;
 }
+
+export interface PlayerGameBreakdown {
+  gameId: string;
+  title: string;
+  date: string;
+  teamName: string;
+  opponentName: string;
+  pa: number;
+  ab: number;
+  h: number;
+  hr: number;
+  rbi: number;
+  bb: number;
+  so: number;
+  avg: number | null;
+}
+
+export interface CumulativePlayerStats {
+  key: string;
+  name: string;
+  number: string;
+  position: string;
+  lastSlot: number;
+  gamesPlayed: number;
+  pa: number;
+  ab: number;
+  h: number;
+  singles: number;
+  doubles: number;
+  triples: number;
+  hr: number;
+  tb: number;
+  rbi: number;
+  bb: number;
+  hbp: number;
+  so: number;
+  sac: number;
+  sf: number;
+  e: number;
+  fc: number;
+  avg: number | null;
+  obp: number | null;
+  slg: number | null;
+  ops: number | null;
+  hitDirections: HitDirectionSummary;
+  hitTypes: HitTypeSummary;
+  gameBreakdown: PlayerGameBreakdown[];
+}
+
+export interface CumulativeTeamTotals {
+  gamesCount: number;
+  gamesWithPaCount: number;
+  playersCount: number;
+  activePlayersCount: number;
+  pa: number;
+  ab: number;
+  h: number;
+  singles: number;
+  doubles: number;
+  triples: number;
+  hr: number;
+  tb: number;
+  rbi: number;
+  runs: number;
+  bb: number;
+  hbp: number;
+  so: number;
+  sac: number;
+  sf: number;
+  avg: number | null;
+  obp: number | null;
+  slg: number | null;
+  ops: number | null;
+  hitDirections: HitDirectionSummary;
+  hitTypes: HitTypeSummary;
+}
+
