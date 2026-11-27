@@ -186,6 +186,7 @@ export interface PlayerGameBreakdown {
   bb: number;
   so: number;
   avg: number | null;
+  outcomes: OutcomeCode[];
 }
 
 export interface CumulativePlayerStats {
@@ -194,6 +195,7 @@ export interface CumulativePlayerStats {
   number: string;
   position: string;
   lastSlot: number;
+  slots: number[];
   gamesPlayed: number;
   pa: number;
   ab: number;

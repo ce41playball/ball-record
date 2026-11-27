@@ -24,6 +24,7 @@ import {
   HIT_DIRECTION_GROUPS,
   HIT_TYPE_CODES,
   HIT_TYPE_DEFINITIONS,
+  OUTCOME_DEFINITIONS,
 } from '../utils/baseballEngine';
 
 type SortKey =
@@ -94,13 +95,20 @@ export const TeamCumulativeStatsPage: React.FC<
 
   const filteredAndSortedPlayers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+    const slotQuery = parseSlotQuery(query);
     const list = players.filter((p) => {
       if (onlyWithPa && p.pa === 0) return false;
       if (query) {
         const matchName = p.name.toLowerCase().includes(query);
         const matchNum = p.number.toLowerCase().includes(query);
         const matchPos = p.position.toLowerCase().includes(query);
-        if (!matchName && !matchNum && !matchPos) return false;
+        const matchSlot =
+          slotQuery !== null
+            ? p.slots.includes(slotQuery)
+            : p.slots.some(
+                (s) => `${s}棒`.includes(query) || `第${s}棒`.includes(query)
+              );
+        if (!matchName && !matchNum && !matchPos && !matchSlot) return false;
       }
       return true;
     });
@@ -278,8 +286,8 @@ export const TeamCumulativeStatsPage: React.FC<
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜尋選手姓名、背號或守位"
-                aria-label="搜尋選手"
+                placeholder="搜尋姓名、背號、守位或出賽棒次"
+                aria-label="搜尋選手姓名、背號、守位或出賽棒次"
                 className="w-full h-10 pl-9 pr-8 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-sm text-slate-900 focus:outline-none focus:border-[#1E3A8A]"
               />
               {searchQuery && (
@@ -449,11 +457,11 @@ export const TeamCumulativeStatsPage: React.FC<
             查無符合條件的選手紀錄，請調整搜尋關鍵字或篩選條件。
           </div>
         ) : (
-          <div className="overflow-x-auto -mx-4 px-4">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-separate border-spacing-0 text-xs">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500">
-                  <th className="py-2.5 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-white z-10 min-w-[96px]">
+                <tr className="text-slate-500">
+                  <th className="py-2.5 pl-1 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-white z-20 min-w-[96px] border-b border-r border-slate-200">
                     選手
                   </th>
                   {sortColumns.map((col) => {
@@ -462,7 +470,7 @@ export const TeamCumulativeStatsPage: React.FC<
                       <th
                         key={col.key}
                         title={col.title}
-                        className="py-2.5 px-2 text-center font-semibold whitespace-nowrap"
+                        className="py-2.5 px-2 text-center font-semibold whitespace-nowrap border-b border-slate-200 bg-white"
                       >
                         <button
                           type="button"
@@ -488,7 +496,7 @@ export const TeamCumulativeStatsPage: React.FC<
                       </th>
                     );
                   })}
-                  <th className="py-2.5 px-2 text-center font-semibold whitespace-nowrap">
+                  <th className="py-2.5 px-2 text-center font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                     滾飛比
                   </th>
                 </tr>
@@ -496,6 +504,10 @@ export const TeamCumulativeStatsPage: React.FC<
               <tbody>
                 {filteredAndSortedPlayers.map((p) => {
                   const isSelected = selectedPlayerKey === p.key;
+                  const cellBg = isSelected
+                    ? 'bg-blue-50'
+                    : 'bg-white group-hover:bg-slate-50';
+                  const cellBase = `py-2.5 px-2 text-center font-mono-tabular border-b border-slate-100 group-last:border-b-0 transition-colors ${cellBg}`;
                   return (
                     <tr
                       key={p.key}
@@ -504,16 +516,10 @@ export const TeamCumulativeStatsPage: React.FC<
                           prev === p.key ? null : p.key
                         )
                       }
-                      className={`border-b border-slate-100 last:border-b-0 cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50/70'
-                          : 'hover:bg-slate-50/90'
-                      }`}
+                      className="group cursor-pointer"
                     >
                       <td
-                        className={`py-2.5 pr-3 sticky left-0 z-10 whitespace-nowrap ${
-                          isSelected ? 'bg-blue-50' : 'bg-white'
-                        }`}
+                        className={`py-2.5 pl-1 pr-3 sticky left-0 z-20 whitespace-nowrap border-b border-slate-100 group-last:border-b-0 border-r border-r-slate-200 transition-colors ${cellBg}`}
                       >
                         <span
                           className={`font-semibold ${
@@ -523,29 +529,29 @@ export const TeamCumulativeStatsPage: React.FC<
                           {p.name}
                         </span>
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.gamesPlayed}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.pa}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.ab}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular font-semibold text-slate-900">
+                      <td className={`${cellBase} font-semibold text-slate-900`}>
                         {p.h}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.singles}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.doubles}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.triples}
                       </td>
                       <td
-                        className={`py-2.5 px-2 text-center font-mono-tabular ${
+                        className={`${cellBase} ${
                           p.hr > 0
                             ? 'font-bold text-rose-600'
                             : 'text-slate-600'
@@ -553,37 +559,37 @@ export const TeamCumulativeStatsPage: React.FC<
                       >
                         {p.hr}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.tb}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.rbi}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.bb}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.hbp}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {p.so}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600">
+                      <td className={`${cellBase} text-slate-600`}>
                         {p.sac + p.sf}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-slate-900">
+                      <td className={`${cellBase} font-bold text-slate-900`}>
                         {formatAvg(p.avg)}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {formatAvg(p.obp)}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-700">
+                      <td className={`${cellBase} text-slate-700`}>
                         {formatAvg(p.slg)}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
+                      <td className={`${cellBase} font-bold text-[#1E3A8A]`}>
                         {formatAvg(p.ops)}
                       </td>
-                      <td className="py-2.5 px-2 text-center font-mono-tabular text-slate-600 whitespace-nowrap">
+                      <td className={`${cellBase} text-slate-600 whitespace-nowrap`}>
                         {formatGroundFlyRatio(p.hitTypes)}
                       </td>
                     </tr>
@@ -591,65 +597,65 @@ export const TeamCumulativeStatsPage: React.FC<
                 })}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-slate-200 bg-slate-50/90 text-slate-900">
-                  <td className="py-2.5 pr-3 font-bold text-[#1E3A8A] whitespace-nowrap sticky left-0 bg-slate-50 z-10">
+                <tr className="text-slate-900">
+                  <td className="py-2.5 pl-1 pr-3 font-bold text-[#1E3A8A] whitespace-nowrap sticky left-0 bg-slate-50 z-20 border-t-2 border-slate-200 border-r border-r-slate-200">
                     全隊合計
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.gamesCount}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.pa}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.ab}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A] bg-slate-50 border-t-2 border-slate-200">
                     {totals.h}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.singles}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.doubles}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.triples}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-rose-600">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-rose-600 bg-slate-50 border-t-2 border-slate-200">
                     {totals.hr}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.tb}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.rbi}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.bb}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.hbp}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.so}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {totals.sac + totals.sf}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A] bg-slate-50 border-t-2 border-slate-200">
                     {formatAvg(totals.avg)}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {formatAvg(totals.obp)}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold bg-slate-50 border-t-2 border-slate-200">
                     {formatAvg(totals.slg)}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A]">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold text-[#1E3A8A] bg-slate-50 border-t-2 border-slate-200">
                     {formatAvg(totals.ops)}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold whitespace-nowrap">
+                  <td className="py-2.5 px-2 text-center font-mono-tabular font-bold whitespace-nowrap bg-slate-50 border-t-2 border-slate-200">
                     {formatGroundFlyRatio(totals.hitTypes)}
                   </td>
                 </tr>
@@ -715,8 +721,11 @@ export const TeamCumulativeStatsPage: React.FC<
                         <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
                           四壞
                         </th>
-                        <th className="py-2 pl-2 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
                           三振
+                        </th>
+                        <th className="py-2 pl-3 text-left font-semibold whitespace-nowrap">
+                          打擊結果
                         </th>
                       </tr>
                     </thead>
@@ -732,16 +741,16 @@ export const TeamCumulativeStatsPage: React.FC<
                               onClick={() => onJumpToGame(gb.gameId)}
                               className="text-left group"
                             >
-                              <div className="font-semibold text-slate-900 group-hover:text-[#1E3A8A] transition-colors">
-                                {gb.title}
+                              <div className="font-mono-tabular font-semibold text-slate-900 group-hover:text-[#1E3A8A] transition-colors">
+                                {gb.date}
                                 {gb.gameId === activeGameId && (
-                                  <span className="ml-1.5 text-[11px] font-semibold text-emerald-700">
+                                  <span className="ml-1.5 font-sans text-[11px] font-semibold text-emerald-700">
                                     目前場次
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[11px] text-slate-500 font-mono-tabular">
-                                {gb.date} · {gb.teamName} vs {gb.opponentName}
+                              <div className="text-[11px] text-slate-500">
+                                vs {gb.opponentName}
                               </div>
                             </button>
                           </td>
@@ -763,8 +772,17 @@ export const TeamCumulativeStatsPage: React.FC<
                           <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
                             {gb.bb}
                           </td>
-                          <td className="py-2.5 pl-2 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
                             {gb.so}
+                          </td>
+                          <td className="py-2.5 pl-3 text-left text-slate-600 whitespace-nowrap">
+                            {gb.outcomes.length > 0
+                              ? gb.outcomes
+                                  .map(
+                                    (o) => OUTCOME_DEFINITIONS[o].shortLabel
+                                  )
+                                  .join(' · ')
+                              : '---'}
                           </td>
                         </tr>
                       ))}
@@ -1059,6 +1077,33 @@ export const TeamCumulativeStatsPage: React.FC<
   );
 };
 
+function parseSlotQuery(rawQuery: string): number | null {
+  const normalized = rawQuery.replace(/^第/, '').replace(/棒$/, '').trim();
+  if (!normalized) return null;
+  if (/^\d{1,2}$/.test(normalized)) {
+    const num = Number(normalized);
+    return num >= 1 && num <= 15 ? num : null;
+  }
+  const chineseSlotMap: Record<string, number> = {
+    一: 1,
+    二: 2,
+    三: 3,
+    四: 4,
+    五: 5,
+    六: 6,
+    七: 7,
+    八: 8,
+    九: 9,
+    十: 10,
+    十一: 11,
+    十二: 12,
+    十三: 13,
+    十四: 14,
+    十五: 15,
+  };
+  return chineseSlotMap[normalized] ?? null;
+}
+
 function downloadTextFile(content: string, filename: string, mime: string) {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -1070,3 +1115,4 @@ function downloadTextFile(content: string, filename: string, mime: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+

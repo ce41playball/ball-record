@@ -882,6 +882,7 @@ export function calculateCumulativeTeamStats(
     number: string;
     position: string;
     lastSlot: number;
+    slots: Set<number>;
     gameIds: Set<string>;
     pa: number;
     ab: number;
@@ -911,6 +912,7 @@ export function calculateCumulativeTeamStats(
         rbi: number;
         bb: number;
         so: number;
+        outcomes: OutcomeCode[];
       }
     >;
   }
@@ -926,6 +928,7 @@ export function calculateCumulativeTeamStats(
     const key = name.trim();
     const existing = playerMap.get(key);
     if (existing) {
+      existing.slots.add(slot);
       if (!existing.number && number.trim()) {
         existing.number = number.trim();
       }
@@ -940,6 +943,7 @@ export function calculateCumulativeTeamStats(
       number: number.trim(),
       position: position.trim(),
       lastSlot: slot,
+      slots: new Set([slot]),
       gameIds: new Set(),
       pa: 0,
       ab: 0,
@@ -1040,10 +1044,12 @@ export function calculateCumulativeTeamStats(
           rbi: 0,
           bb: 0,
           so: 0,
+          outcomes: [],
         };
         acc.breakdownMap.set(game.id, gameEntry);
       }
       gameEntry.pa += 1;
+      gameEntry.outcomes.push(pa.outcome);
       if (def.countsAsAtBat) gameEntry.ab += 1;
       if (def.isHit) gameEntry.h += 1;
       if (pa.outcome === 'HR') gameEntry.hr += 1;
@@ -1080,6 +1086,7 @@ export function calculateCumulativeTeamStats(
         bb: item.bb,
         so: item.so,
         avg: item.ab > 0 ? item.h / item.ab : null,
+        outcomes: item.outcomes,
       }));
 
       return {
@@ -1088,6 +1095,7 @@ export function calculateCumulativeTeamStats(
         number: acc.number,
         position: acc.position,
         lastSlot: acc.lastSlot,
+        slots: Array.from(acc.slots).sort((a, b) => a - b),
         gamesPlayed: acc.gameIds.size,
         pa: acc.pa,
         ab: acc.ab,
