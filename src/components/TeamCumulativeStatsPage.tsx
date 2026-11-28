@@ -696,86 +696,86 @@ export const TeamCumulativeStatsPage: React.FC<
                   此選手尚未有打席紀錄。
                 </div>
               ) : (
-                <div className="overflow-x-auto -mx-2 px-2">
-                  <table className="w-full text-left border-collapse text-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-separate border-spacing-0 text-xs">
                     <thead>
-                      <tr className="border-b border-slate-200 text-slate-500">
-                        <th className="py-2 pr-2 font-semibold whitespace-nowrap">
+                      <tr className="text-slate-500">
+                        <th className="py-2 pl-1 pr-3 font-semibold whitespace-nowrap sticky left-0 bg-white z-20 min-w-[116px] border-b border-r border-slate-200">
                           比賽場次
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-2 text-center font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
+                          棒次
+                        </th>
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           打席
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           打數
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           安打
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           全壘
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           打點
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           四壞
                         </th>
-                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap">
+                        <th className="py-2 px-1.5 text-right font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           三振
                         </th>
-                        <th className="py-2 pl-3 text-left font-semibold whitespace-nowrap">
+                        <th className="py-2 pl-3 pr-1 text-left font-semibold whitespace-nowrap border-b border-slate-200 bg-white">
                           打擊結果
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedPlayer.gameBreakdown.map((gb) => (
-                        <tr
-                          key={gb.gameId}
-                          className="border-b border-slate-100 last:border-b-0"
-                        >
-                          <td className="py-2.5 pr-2">
+                        <tr key={gb.gameId} className="group">
+                          <td className="py-2.5 pl-1 pr-3 sticky left-0 z-20 whitespace-nowrap bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 border-r border-r-slate-200 transition-colors">
                             <button
                               type="button"
                               onClick={() => onJumpToGame(gb.gameId)}
-                              className="text-left group"
+                              className="text-left group/btn"
                             >
-                              <div className="font-mono-tabular font-semibold text-slate-900 group-hover:text-[#1E3A8A] transition-colors">
+                              <div className="font-mono-tabular font-semibold text-slate-900 group-hover/btn:text-[#1E3A8A] transition-colors">
                                 {gb.date}
-                                {gb.gameId === activeGameId && (
-                                  <span className="ml-1.5 font-sans text-[11px] font-semibold text-emerald-700">
-                                    目前場次
-                                  </span>
-                                )}
                               </div>
                               <div className="text-[11px] text-slate-500">
                                 vs {gb.opponentName}
                               </div>
                             </button>
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-2 text-center font-mono-tabular font-semibold text-[#1E3A8A] whitespace-nowrap bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
+                            {gb.slots.length > 0
+                              ? gb.slots.map((s) => `${s}棒`).join('、')
+                              : '---'}
+                          </td>
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.pa}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.ab}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular font-semibold text-slate-900">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular font-semibold text-slate-900 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.h}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.hr}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.rbi}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.bb}
                           </td>
-                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700">
+                          <td className="py-2.5 px-1.5 text-right font-mono-tabular text-slate-700 bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.so}
                           </td>
-                          <td className="py-2.5 pl-3 text-left text-slate-600 whitespace-nowrap">
+                          <td className="py-2.5 pl-3 pr-1 text-left text-slate-600 whitespace-nowrap bg-white group-hover:bg-slate-50 border-b border-slate-100 group-last:border-b-0 transition-colors">
                             {gb.outcomes.length > 0
                               ? gb.outcomes
                                   .map(

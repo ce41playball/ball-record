@@ -905,6 +905,7 @@ export function calculateCumulativeTeamStats(
       string,
       {
         game: GameRecord;
+        slots: Set<number>;
         pa: number;
         ab: number;
         h: number;
@@ -1037,6 +1038,7 @@ export function calculateCumulativeTeamStats(
       if (!gameEntry) {
         gameEntry = {
           game,
+          slots: new Set(),
           pa: 0,
           ab: 0,
           h: 0,
@@ -1048,6 +1050,7 @@ export function calculateCumulativeTeamStats(
         };
         acc.breakdownMap.set(game.id, gameEntry);
       }
+      gameEntry.slots.add(pa.batterSlot);
       gameEntry.pa += 1;
       gameEntry.outcomes.push(pa.outcome);
       if (def.countsAsAtBat) gameEntry.ab += 1;
@@ -1078,6 +1081,7 @@ export function calculateCumulativeTeamStats(
         date: item.game.date,
         teamName: item.game.teamName,
         opponentName: item.game.opponentName,
+        slots: Array.from(item.slots).sort((a, b) => a - b),
         pa: item.pa,
         ab: item.ab,
         h: item.h,

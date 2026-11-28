@@ -178,6 +178,7 @@ export interface PlayerGameBreakdown {
   date: string;
   teamName: string;
   opponentName: string;
+  slots: number[];
   pa: number;
   ab: number;
   h: number;
